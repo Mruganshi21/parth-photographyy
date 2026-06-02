@@ -1,4 +1,5 @@
-import { useState, useEffect, MouseEvent as ReactMouseEvent } from 'react'
+import { useState, useEffect } from 'react'
+import type { MouseEvent as ReactMouseEvent } from 'react'
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import './index.css'
 
