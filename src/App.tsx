@@ -43,6 +43,7 @@ const testimonials = [
 ]
 
 function App() {
+  console.log('Build:', new Date().toISOString())
   const [activeFilter, setActiveFilter] = useState('All')
   const [selectedImage, setSelectedImage] = useState<typeof galleryImages[0] | null>(null)
   const [shutterOpen, setShutterOpen] = useState(true)
