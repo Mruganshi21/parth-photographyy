@@ -1,365 +1,690 @@
-import { useState, useEffect } from 'react'
-import type { MouseEvent as ReactMouseEvent } from 'react'
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import './index.css'
 
-const galleryImages = [
-  { id: 1, category: 'Portrait', src: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=800&q=80', title: 'Ethereal Glow', camera: 'Sony A7IV', lens: '85mm f/1.4', settings: 'f/1.8 · 1/250s · ISO 200', location: 'Mumbai', colors: ['#f4a6b8', '#ffd6ba', '#c9b6e4'], likes: 248 },
-  { id: 2, category: 'Landscape', src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80', title: 'Mountain Dawn', camera: 'Canon R5', lens: '24-70mm f/2.8', settings: 'f/8 · 1/125s · ISO 100', location: 'Himalayas', colors: ['#b8e0d2', '#c9b6e4', '#ffd6ba'], likes: 312 },
-  { id: 3, category: 'Urban', src: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&q=80', title: 'City Lights', camera: 'Sony A7III', lens: '35mm f/1.4', settings: 'f/2 · 1/60s · ISO 800', location: 'Tokyo', colors: ['#c9b6e4', '#f4a6b8', '#4a3f4a'], likes: 189 },
-  { id: 4, category: 'Portrait', src: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=800&q=80', title: 'Natural Beauty', camera: 'Fuji X-T5', lens: '56mm f/1.2', settings: 'f/2 · 1/500s · ISO 400', location: 'Studio', colors: ['#ffd6ba', '#f4a6b8', '#b8e0d2'], likes: 421 },
-  { id: 5, category: 'Nature', src: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=800&q=80', title: 'Morning Fields', camera: 'Nikon Z7', lens: '70-200mm f/2.8', settings: 'f/4 · 1/1000s · ISO 200', location: 'Goa', colors: ['#b8e0d2', '#ffd6ba', '#c9b6e4'], likes: 267 },
-  { id: 6, category: 'Street', src: 'https://images.unsplash.com/photo-1519608487953-e999c86aa745?w=800&q=80', title: 'Urban Tales', camera: 'Leica Q2', lens: '28mm f/1.7', settings: 'f/2.8 · 1/250s · ISO 400', location: 'Mumbai', colors: ['#4a3f4a', '#f4a6b8', '#ffd6ba'], likes: 198 },
-  { id: 7, category: 'Portrait', src: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&q=80', title: 'Golden Hour', camera: 'Canon R6', lens: '50mm f/1.2', settings: 'f/1.8 · 1/200s · ISO 100', location: 'Jaipur', colors: ['#ffd6ba', '#f4a6b8', '#c9b6e4'], likes: 356 },
-  { id: 8, category: 'Landscape', src: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80', title: 'Forest Light', camera: 'Sony A7R V', lens: '16-35mm f/2.8', settings: 'f/11 · 1/30s · ISO 100', location: 'Kerala', colors: ['#b8e0d2', '#c9b6e4', '#4a3f4a'], likes: 289 },
-  { id: 9, category: 'Urban', src: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800&q=80', title: 'Night Skyline', camera: 'Sony A7S III', lens: '24mm f/1.4', settings: 'f/2.8 · 15s · ISO 1600', location: 'Dubai', colors: ['#4a3f4a', '#c9b6e4', '#f4a6b8'], likes: 445 },
-  { id: 10, category: 'Portrait', src: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&q=80', title: 'Portrait Dreams', camera: 'Hasselblad X2D', lens: '80mm f/1.9', settings: 'f/2 · 1/320s · ISO 100', location: 'Studio', colors: ['#f4a6b8', '#ffd6ba', '#b8e0d2'], likes: 512 },
-  { id: 11, category: 'Nature', src: 'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=800&q=80', title: 'Waterfall', camera: 'Nikon Z9', lens: '14-24mm f/2.8', settings: 'f/16 · 1/4s · ISO 64', location: 'Coorg', colors: ['#b8e0d2', '#c9b6e4', '#ffd6ba'], likes: 378 },
-  { id: 12, category: 'Street', src: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800&q=80', title: 'City Pulse', camera: 'Fuji X-Pro3', lens: '23mm f/2', settings: 'f/4 · 1/125s · ISO 800', location: 'Delhi', colors: ['#4a3f4a', '#f4a6b8', '#ffd6ba'], likes: 234 },
+const ease = [0.65, 0, 0.35, 1] as const
+const spring = { type: 'spring' as const, stiffness: 400, damping: 60, mass: 1 }
+
+const loaderSlides = [
+  'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&q=80',
+  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80',
+  'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&q=80',
+  'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=600&q=80',
+  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&q=80',
+  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&q=80',
 ]
 
-const services = [
-  { icon: '📷', title: 'Portrait Photography', description: 'Professional portrait sessions capturing your unique personality.' },
-  { icon: '🏔️', title: 'Landscape & Nature', description: 'Breathtaking captures of natural landscapes.' },
-  { icon: '🌆', title: 'Urban & Street', description: 'Dynamic city photography.' },
-  { icon: '💍', title: 'Events & Weddings', description: 'Documenting your special moments.' },
-  { icon: '🎬', title: 'Video Production', description: 'Cinematic video creation.' },
-  { icon: '🎨', title: 'Photo Editing', description: 'Professional post-processing.' },
+const photos = [
+  { id: 1,  src: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=900&q=80',  title: 'Ethereal Glow',   category: 'Portrait'      },
+  { id: 2,  src: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=900&q=80',  title: 'City Streets',   category: 'Street'        },
+  { id: 3,  src: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1400&q=80', title: 'Mountain Lake',  category: 'Landscape'     },
+  { id: 4,  src: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=900&q=80',  title: 'Golden Light',   category: 'Portrait'      },
+  { id: 5,  src: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=900&q=80',  title: 'Night Skyline',  category: 'Architecture'  },
+  { id: 6,  src: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1400&q=80', title: 'Golden Fields',  category: 'Landscape'     },
+  { id: 7,  src: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=900&q=80',  title: 'Warm Portrait',  category: 'Portrait'      },
+  { id: 8,  src: 'https://images.unsplash.com/photo-1518098268026-4e89f1a2cd8e?w=900&q=80',  title: 'Street Light',   category: 'Street'        },
+  { id: 9,  src: 'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=1400&q=80', title: 'Waterfall',      category: 'Landscape'     },
+  { id: 10, src: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=900&q=80',  title: 'Misty Forest',   category: 'Landscape'     },
+  { id: 11, src: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=900&q=80',  title: 'City Pulse',     category: 'Architecture'  },
+  { id: 12, src: 'https://images.unsplash.com/photo-1504198453319-5ce911bafcde?w=1400&q=80', title: 'Desert Road',    category: 'Travel'        },
 ]
 
-const skills = [
-  { name: 'Portrait Photography', icon: '📸' },
-  { name: 'Landscape & Nature', icon: '🏔️' },
-  { name: 'Urban Photography', icon: '🏙️' },
-  { name: 'Photo Editing', icon: '🎨' },
-  { name: 'Video Production', icon: '🎬' },
-  { name: 'Event Coverage', icon: '🎥' },
+const categories = [
+  { name: 'Portrait',      count: 48, src: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=700&q=80' },
+  { name: 'Landscape',     count: 36, src: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=700&q=80' },
+  { name: 'Street',        count: 24, src: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=700&q=80' },
+  { name: 'Travel',        count: 62, src: 'https://images.unsplash.com/photo-1504198453319-5ce911bafcde?w=700&q=80' },
+  { name: 'Architecture',  count: 18, src: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=700&q=80' },
+  { name: 'Events',        count: 30, src: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=700&q=80' },
 ]
 
-const testimonials = [
-  { name: 'Sarah Johnson', role: 'Wedding Client', text: 'Parth captured our special day beautifully!', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80' },
-  { name: 'Michael Chen', role: 'Commercial Client', text: 'Incredible professional work!', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80' },
-  { name: 'Emily Davis', role: 'Portrait Client', text: 'Best photographer ever!', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&q=80' },
+const packages = [
+  {
+    name: 'Basic',
+    price: '₹5,000',
+    features: ['2 Hour Session', '30 Edited Photos', 'Online Gallery', '1 Location'],
+  },
+  {
+    name: 'Standard',
+    price: '₹12,000',
+    features: ['4 Hour Session', '80 Edited Photos', 'Online Gallery', '2 Locations', 'Outfit Change'],
+  },
+  {
+    name: 'Premium',
+    price: '₹25,000',
+    features: ['Full Day Session', '200+ Edited Photos', 'Online Gallery', 'Unlimited Locations', 'Video Highlights', 'Print Pack'],
+  },
 ]
 
-function App() {
-  console.log('Build:', new Date().toISOString())
-  const [activeFilter, setActiveFilter] = useState('All')
-  const [selectedImage, setSelectedImage] = useState<typeof galleryImages[0] | null>(null)
-  const [shutterOpen, setShutterOpen] = useState(true)
-  const [liked, setLiked] = useState<Record<number, boolean>>({})
-  const [likeCounts, setLikeCounts] = useState<Record<number, number>>(
-    Object.fromEntries(galleryImages.map(img => [img.id, img.likes]))
-  )
+const navLinks = [
+  { label: 'Gallery',    href: '#gallery'    },
+  { label: 'Categories', href: '#categories' },
+  { label: 'About',      href: '#about'      },
+  { label: 'Orders',     href: '#orders'     },
+]
 
-  const { scrollYProgress } = useScroll()
-  const navBg = useTransform(scrollYProgress, [0, 0.1], ['rgba(255,255,255,0)', 'rgba(255,255,255,0.9)'])
+type Photo = typeof photos[0]
+type CursorType = 'default' | 'hover' | 'view'
 
-  const toggleLike = (id: number, e: ReactMouseEvent) => {
-    e.stopPropagation()
-    setLiked(prev => ({ ...prev, [id]: !prev[id] }))
-    setLikeCounts(prev => ({
-      ...prev,
-      [id]: prev[id] + (liked[id] ? -1 : 1)
-    }))
+function PhotoCard({
+  photo, outerClass, reveal, delay = 0, titleLarge = false, onOpen, setCursor,
+}: {
+  photo: Photo
+  outerClass: string
+  reveal: 'left' | 'right' | 'up'
+  delay?: number
+  titleLarge?: boolean
+  onOpen: () => void
+  setCursor: (t: CursorType) => void
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [tiltX, setTiltX] = useState(0)
+  const [tiltY, setTiltY] = useState(0)
+  const [spot, setSpot] = useState({ x: 50, y: 50, on: false })
+
+  function onMove(e: React.MouseEvent) {
+    const el = ref.current
+    if (!el) return
+    const r = el.getBoundingClientRect()
+    setTiltX(((e.clientY - r.top - r.height / 2) / (r.height / 2)) * -6)
+    setTiltY(((e.clientX - r.left - r.width / 2) / (r.width / 2)) * 6)
+    setSpot({ x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100, on: true })
   }
 
-  const handlePrev = () => {
-    if (!selectedImage) return
-    const currentIndex = filteredImages.findIndex(img => img.id === selectedImage.id)
-    const prevIndex = (currentIndex - 1 + filteredImages.length) % filteredImages.length
-    setSelectedImage(filteredImages[prevIndex])
+  function onLeave() {
+    setTiltX(0); setTiltY(0)
+    setSpot(s => ({ ...s, on: false }))
+    setCursor('default')
   }
 
-  const handleNext = () => {
-    if (!selectedImage) return
-    const currentIndex = filteredImages.findIndex(img => img.id === selectedImage.id)
-    const nextIndex = (currentIndex + 1) % filteredImages.length
-    setSelectedImage(filteredImages[nextIndex])
-  }
+  const scrollInit = reveal === 'left'
+    ? { opacity: 0, x: -70 }
+    : reveal === 'right'
+    ? { opacity: 0, x: 70 }
+    : { opacity: 0, y: 70 }
 
-  const handleDownload = async () => {
-    if (!selectedImage) return
-    try {
-      const response = await fetch(selectedImage.src)
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${selectedImage.title.replace(/\s+/g, '-').toLowerCase()}.jpg`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      window.URL.revokeObjectURL(url)
-    } catch (err) {
-      window.open(selectedImage.src, '_blank')
-    }
-  }
-
-  const handleShare = async () => {
-    if (!selectedImage) return
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: selectedImage.title,
-          text: `Check out "${selectedImage.title}" by Parth Photography`,
-          url: window.location.href,
-        })
-      } catch {}
-    } else {
-      navigator.clipboard.writeText(window.location.href)
-    }
-  }
-
-  useEffect(() => {
-    const timer = setTimeout(() => setShutterOpen(false), 1500)
-    return () => clearTimeout(timer)
-  }, [])
-
-  useEffect(() => {
-    if (!selectedImage) return
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') handlePrev()
-      else if (e.key === 'ArrowRight') handleNext()
-      else if (e.key === 'Escape') setSelectedImage(null)
-    }
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [selectedImage, activeFilter])
-
-  const filters = ['All', 'Portrait', 'Landscape', 'Urban', 'Nature', 'Street']
-  const filteredImages = activeFilter === 'All' ? galleryImages : galleryImages.filter(img => img.category === activeFilter)
-
-  const apertureShapes = Array.from({ length: 8 }, (_, i) => ({ id: i, angle: i * 45, delay: i * 0.1 }))
+  const scrollEnd = reveal === 'up' ? { opacity: 1, y: 0 } : { opacity: 1, x: 0 }
 
   return (
-    <>
-      <AnimatePresence>
-        {shutterOpen && (
-          <motion.div className="shutter-overlay" initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.8 }}>
-            {apertureShapes.map((shape) => (
-              <motion.div key={shape.id} className="shutter-blade" initial={{ rotate: 0 }} exit={{ rotate: shape.angle * 2 }} transition={{ duration: 0.6, delay: shape.delay }} style={{ transform: `rotate(${shape.angle}deg)` }} />
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <section className="hero" id="home">
-        <div className="hero-bg" />
-
-        <div className="lens-effect">
-          {apertureShapes.map((shape) => (
-            <motion.div key={shape.id} className="lens-ring" animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }} transition={{ duration: 3, repeat: Infinity, delay: shape.delay }} style={{ transform: `rotate(${shape.angle}deg) scale(${1 + shape.id * 0.15})` }} />
-          ))}
-        </div>
-
-        <motion.div className="focus-indicator">
-          <motion.div className="focus-corner tl" animate={{ scale: [1, 0.8, 1] }} transition={{ duration: 2, repeat: Infinity }} />
-          <motion.div className="focus-corner tr" animate={{ scale: [1, 0.8, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }} />
-          <motion.div className="focus-corner bl" animate={{ scale: [1, 0.8, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 1 }} />
-          <motion.div className="focus-corner br" animate={{ scale: [1, 0.8, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 1.5 }} />
-        </motion.div>
-
-        <motion.div className="hero-content">
-          <motion.span className="hero-subtitle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.8 }}>Visual Storyteller</motion.span>
-          <motion.h1 className="hero-title" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2 }}>Capturing Moments<br /><span>Creating Memories</span></motion.h1>
-          <motion.p className="hero-description" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.2 }}>Professional photography that tells your unique story.</motion.p>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.4 }} style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-            <motion.a href="#gallery" className="hero-cta" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>View Gallery</motion.a>
-            <motion.a href="#contact" className="hero-cta hero-cta-outline" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>Contact Me</motion.a>
-          </motion.div>
-        </motion.div>
-
-        <motion.div className="scroll-indicator" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.6 }}>
-          <motion.span animate={{ y: [0, 8, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>Scroll</motion.span>
-        </motion.div>
-      </section>
-
-      <motion.nav className="navbar" style={{ background: navBg }} initial={{ y: -100 }} animate={{ y: 0 }} transition={{ duration: 0.6, delay: 2 }}>
-        <motion.div className="logo" whileHover={{ scale: 1.1, rotate: 3 }}>PARTH</motion.div>
-        <ul className="nav-links">
-          {['Home', 'Gallery', 'About', 'Services', 'Contact'].map((item, i) => (
-            <motion.li key={item} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * i + 2.2 }}>
-              <motion.a href={`#${item.toLowerCase()}`} whileHover={{ color: '#f4a6b8', scale: 1.05 }}>{item}</motion.a>
-            </motion.li>
-          ))}
-        </ul>
-        <button className="mobile-menu-btn">☰</button>
-      </motion.nav>
-
-      <section className="gallery" id="gallery">
-        <motion.div className="section-header" initial={{ opacity: 0, y: 60 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
-          <p className="section-subtitle">Portfolio</p>
-          <h2 className="section-title">Featured Work</h2>
-        </motion.div>
-        <motion.div className="filters" style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', marginBottom: '3rem', flexWrap: 'wrap' }}>
-          {filters.map((filter, index) => (
-            <motion.button key={filter} onClick={() => setActiveFilter(filter)} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.05 }} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }} className={activeFilter === filter ? 'filter-btn active' : 'filter-btn'}>{filter}</motion.button>
-          ))}
-        </motion.div>
-        <motion.div className="gallery-grid" layout>
-          <AnimatePresence mode='popLayout'>
-            {filteredImages.map((image, index) => (
-              <motion.div key={image.id} className="gallery-item" layout initial={{ opacity: 0, scale: 0.6 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: index * 0.05 }} whileHover={{ scale: 1.03, zIndex: 10 }} onClick={() => setSelectedImage(image)}>
-                <img src={image.src} alt={image.title} />
-                <div className="gallery-badge">{image.category}</div>
-                <button className={`gallery-like ${liked[image.id] ? 'liked' : ''}`} onClick={(e) => toggleLike(image.id, e)}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill={liked[image.id] ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                  </svg>
-                  <span>{likeCounts[image.id]}</span>
-                </button>
-                <div className="gallery-overlay">
-                  <h3>{image.title}</h3>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
-      </section>
-
-      <AnimatePresence>
-        {selectedImage && (
-          <motion.div className="lightbox" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedImage(null)}>
-            <button className="lightbox-nav lightbox-prev" onClick={(e) => { e.stopPropagation(); handlePrev() }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
-            </button>
-            <button className="lightbox-nav lightbox-next" onClick={(e) => { e.stopPropagation(); handleNext() }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
-            </button>
-            <motion.div className="lightbox-content" initial={{ scale: 0.5 }} animate={{ scale: 1 }} exit={{ scale: 0.5 }} onClick={(e) => e.stopPropagation()}>
-              <button className="lightbox-close" onClick={() => setSelectedImage(null)}>X</button>
-              <div className="lightbox-counter">
-                {filteredImages.findIndex(img => img.id === selectedImage.id) + 1} / {filteredImages.length}
-              </div>
-              <img src={selectedImage.src} alt={selectedImage.title} />
-              <div className="lightbox-details">
-                <div className="lightbox-header">
-                  <div>
-                    <h3>{selectedImage.title}</h3>
-                    <p className="lightbox-category">{selectedImage.category} · {selectedImage.location}</p>
-                  </div>
-                  <div className="lightbox-actions">
-                    <button className={`lightbox-action ${liked[selectedImage.id] ? 'liked' : ''}`} onClick={(e) => toggleLike(selectedImage.id, e)}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill={liked[selectedImage.id] ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                      </svg>
-                      <span>{likeCounts[selectedImage.id]}</span>
-                    </button>
-                    <button className="lightbox-action" onClick={handleShare} title="Share">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                      </svg>
-                    </button>
-                    <button className="lightbox-action" onClick={handleDownload} title="Download">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <section className="about" id="about">
-        <motion.div className="about-container" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
-          <motion.div className="about-image" initial={{ opacity: 0, x: -80 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
-            <img src="https://images.unsplash.com/photo-1554048612-387768052bf7?w=800&q=80" alt="Photographer" />
-            <motion.div className="image-accent" animate={{ scale: [1, 1.1, 1], rotate: [0, 5, 0] }} transition={{ duration: 4, repeat: Infinity }} />
-          </motion.div>
-          <div className="about-content">
-            <motion.p className="section-subtitle" initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>About Me</motion.p>
-            <motion.h2 initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}>Hi, I am Parth</motion.h2>
-            <motion.p initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}>A passionate photographer with over 5 years of experience capturing beautiful moments.</motion.p>
-            <motion.div className="skills-container" initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 }}>
-              <h3>Skills</h3>
-              <div className="skills-grid">
-                {skills.map((skill, index) => (
-                  <motion.div key={index} className="skill-card" initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.5 + index * 0.1 }} whileHover={{ scale: 1.05 }}>
-                    <span className="skill-icon">{skill.icon}</span>
-                    <span className="skill-name">{skill.name}</span>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-            <motion.div className="about-stats" initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: 0.5 }}>
-              {[{ number: '500+', label: 'Sessions' }, { number: '5+', label: 'Years' }, { number: '50+', label: 'Awards' }, { number: '1000+', label: 'Clients' }].map((stat, i) => (
-                <motion.div key={i} className="stat-item" whileInView={{ scale: [0.5, 1.2, 1] }} viewport={{ once: true }} transition={{ delay: 0.6 + i * 0.1 }}>
-                  <div className="stat-number">{stat.number}</div>
-                  <div className="stat-label">{stat.label}</div>
-                </motion.div>
-              ))}
-            </motion.div>
+    <motion.div
+      className={outerClass}
+      initial={scrollInit}
+      whileInView={scrollEnd}
+      viewport={{ once: true, margin: '-60px' }}
+      transition={{ duration: 0.9, delay, ease }}
+    >
+      <div
+        ref={ref}
+        className="g-tilt"
+        style={{
+          transform: `perspective(900px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale(${spot.on ? 1.02 : 1})`,
+          transition: spot.on ? 'transform 0.1s linear' : 'transform 0.65s cubic-bezier(0.25,0.46,0.45,0.94)',
+        }}
+        onMouseMove={onMove}
+        onMouseEnter={() => setCursor('view')}
+        onMouseLeave={onLeave}
+        onClick={onOpen}
+      >
+        <div className="g-inner">
+          <img
+            src={photo.src}
+            alt={photo.title}
+            loading="lazy"
+            style={{
+              transform: spot.on ? 'scale(1.07)' : 'scale(1)',
+              transition: 'transform 1s cubic-bezier(0.25,0.46,0.45,0.94)',
+            }}
+          />
+          <div
+            className="g-spotlight"
+            style={{
+              background: `radial-gradient(circle 240px at ${spot.x}% ${spot.y}%, rgba(255,255,255,0.18) 0%, transparent 70%)`,
+              opacity: spot.on ? 1 : 0,
+              transition: 'opacity 0.3s ease',
+            }}
+          />
+          <div className="g-overlay" style={{ opacity: spot.on ? 1 : 0, transition: 'opacity 0.4s ease' }}>
+            <span className="g-cat">{photo.category}</span>
+            <span
+              className={`g-title${titleLarge ? ' g-title-lg' : ''}`}
+              style={{ transform: spot.on ? 'translateY(0)' : 'translateY(6px)', transition: 'transform 0.4s ease' }}
+            >{photo.title}</span>
           </div>
-        </motion.div>
-      </section>
-
-      <section className="services" id="services">
-        <motion.div className="section-header" initial={{ opacity: 0, y: 60 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
-          <p className="section-subtitle">Services</p>
-          <h2 className="section-title">What I Offer</h2>
-        </motion.div>
-        <div className="services-grid">
-          {services.map((service, index) => (
-            <motion.div key={index} className="service-card" initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.1 }} whileHover={{ y: -15 }}>
-              <motion.div className="service-icon" whileHover={{ scale: 1.2, rotate: 15 }}>{service.icon}</motion.div>
-              <h3>{service.title}</h3>
-              <p>{service.description}</p>
-            </motion.div>
-          ))}
         </div>
-      </section>
-
-      <section className="testimonials" id="testimonials">
-        <motion.div className="section-header" initial={{ opacity: 0, y: 60 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
-          <p className="section-subtitle">Testimonials</p>
-          <h2 className="section-title">Client Reviews</h2>
-        </motion.div>
-        <div className="testimonials-grid">
-          {testimonials.map((testimonial, index) => (
-            <motion.div key={index} className="testimonial-card" initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.15 }} whileHover={{ y: -10 }}>
-              <div className="testimonial-quote">"</div>
-              <p>{testimonial.text}</p>
-              <div className="testimonial-author">
-                <img src={testimonial.avatar} alt={testimonial.name} />
-                <div><h4>{testimonial.name}</h4><span>{testimonial.role}</span></div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      <section className="contact" id="contact">
-        <motion.div className="contact-container" initial={{ opacity: 0, y: 60 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
-          <p className="section-subtitle">Get In Touch</p>
-          <h2>Let Work Together</h2>
-          <p>Have a project in mind? Send me a message.</p>
-          <motion.form className="contact-form" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 }}>
-            <input type="text" placeholder="Your Name" required />
-            <input type="email" placeholder="Your Email" required />
-            <textarea placeholder="Your Message" required></textarea>
-            <motion.button type="submit" className="submit-btn" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>Send Message</motion.button>
-          </motion.form>
-        </motion.div>
-      </section>
-
-      <footer className="footer">
-        <motion.div className="footer-content" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
-          <div className="footer-logo">PARTH</div>
-          <ul className="footer-links">
-            {['Instagram', 'Twitter', 'LinkedIn', 'Behance'].map(social => (
-              <motion.li key={social} whileHover={{ scale: 1.2, color: '#f4a6b8' }}><a href="#">{social}</a></motion.li>
-            ))}
-          </ul>
-          <p className="footer-copyright">© 2024 Parth Photography. All rights reserved.</p>
-        </motion.div>
-      </footer>
-    </>
+      </div>
+    </motion.div>
   )
 }
 
-export default App
+export default function App() {
+  const [loading, setLoading]         = useState(true)
+  const [loaderPhase, setLoaderPhase] = useState(0)
+  const [slideIndex, setSlideIndex]   = useState(0)
+  const [menuOpen, setMenuOpen]       = useState(false)
+  const [lightbox, setLightbox]       = useState<Photo | null>(null)
+  const [cursorType, setCursorType]   = useState<CursorType>('default')
+
+  const cursorRef  = useRef<HTMLDivElement>(null)
+  const dotRef     = useRef<HTMLDivElement>(null)
+  const mousePos   = useRef({ x: 0, y: 0 })
+  const cursorPos  = useRef({ x: 0, y: 0 })
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    mousePos.current = { x: e.clientX, y: e.clientY }
+    if (dotRef.current) {
+      dotRef.current.style.left = `${e.clientX}px`
+      dotRef.current.style.top  = `${e.clientY}px`
+    }
+  }, [])
+
+  useEffect(() => {
+    const animate = () => {
+      cursorPos.current.x += (mousePos.current.x - cursorPos.current.x) * 0.13
+      cursorPos.current.y += (mousePos.current.y - cursorPos.current.y) * 0.13
+      if (cursorRef.current) {
+        cursorRef.current.style.left = `${cursorPos.current.x}px`
+        cursorRef.current.style.top  = `${cursorPos.current.y}px`
+      }
+      requestAnimationFrame(animate)
+    }
+    window.addEventListener('mousemove', handleMouseMove)
+    const frame = requestAnimationFrame(animate)
+    return () => { window.removeEventListener('mousemove', handleMouseMove); cancelAnimationFrame(frame) }
+  }, [handleMouseMove])
+
+  // Loader phases
+  useEffect(() => {
+    const t1 = setTimeout(() => setLoaderPhase(1), 1500)
+    const t2 = setTimeout(() => setLoaderPhase(2), 3000)
+    const t3 = setTimeout(() => setLoaderPhase(3), 3800)
+    const t4 = setTimeout(() => setLoading(false), 7000)
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4) }
+  }, [])
+
+  useEffect(() => {
+    if (loaderPhase < 3) return
+    const iv = setInterval(() => setSlideIndex(p => (p + 1) % loaderSlides.length), 550)
+    return () => clearInterval(iv)
+  }, [loaderPhase])
+
+  // Escape to close lightbox
+  useEffect(() => {
+    if (!lightbox) return
+    const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') setLightbox(null) }
+    window.addEventListener('keydown', fn)
+    return () => window.removeEventListener('keydown', fn)
+  }, [lightbox])
+
+  // Group photos: every 3 → [left, right, center-large]
+  const groups: Photo[][] = []
+  for (let i = 0; i < photos.length; i += 3) groups.push(photos.slice(i, i + 3))
+
+  const cv = (t: CursorType) => () => setCursorType(t)
+
+  return (
+    <>
+      {/* ── CURSOR ── */}
+      <div ref={cursorRef} className={`cursor cursor-${cursorType}`}>
+        {cursorType === 'view' && <span className="cursor-label">VIEW</span>}
+      </div>
+      <div ref={dotRef} className="cursor-dot" />
+
+      {/* ── LOADER ── */}
+      <AnimatePresence>
+        {loading && (
+          <motion.div className="loader" exit={{ opacity: 0 }} transition={{ duration: 0.85, ease }}>
+            <div className="loader-inner">
+              <motion.div
+                className="loader-word loader-word-l"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, x: loaderPhase >= 1 ? -170 : 0 }}
+                transition={{ opacity: { duration: 0.5 }, x: spring }}
+              >
+                <span className="loader-text">PARTH</span>
+              </motion.div>
+
+              <div className={`loader-frame ${loaderPhase >= 2 ? 'visible' : ''}`}>
+                <div className="loader-frame-inner">
+                  {loaderSlides.map((src, i) => (
+                    <img key={i} src={src} alt=""
+                      className={`loader-slide ${loaderPhase >= 3 && i === slideIndex ? 'active' : ''}`} />
+                  ))}
+                </div>
+              </div>
+
+              <motion.div
+                className="loader-word loader-word-r"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, x: loaderPhase >= 1 ? 170 : 0 }}
+                transition={{ opacity: { duration: 0.5, delay: 0.1 }, x: spring }}
+              >
+                <span className="loader-text">SHOOTS</span>
+              </motion.div>
+            </div>
+
+            <motion.div className="loader-copy-wrap"
+              initial={{ y: 40, opacity: 0 }}
+              animate={{ y: 0, opacity: loaderPhase >= 1 ? 0 : 1 }}
+              transition={{ ...spring, delay: 0.5 }}
+            >
+              <span className="loader-copy">(c) 2024 Parth Shoots</span>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── NAVBAR ── */}
+      {!loading && (
+        <motion.nav className="navbar"
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease }}
+        >
+          <a href="#home" className="nav-logo">PS</a>
+
+          <div className="nav-right">
+            <ul className="nav-links">
+              {navLinks.map(l => (
+                <li key={l.label}>
+                  <a href={l.href} onMouseEnter={cv('hover')} onMouseLeave={cv('default')}>{l.label}</a>
+                </li>
+              ))}
+            </ul>
+            <button className="menu-btn"
+              onClick={() => setMenuOpen(true)}
+              onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+            >
+              <span className="menu-btn-text">Menu</span>
+              <div className="menu-btn-bars"><span /><span /></div>
+            </button>
+          </div>
+        </motion.nav>
+      )}
+
+      {/* ── MENU OVERLAY ── */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div className="menu-overlay"
+            initial={{ clipPath: 'inset(0 0 100% 0)' }}
+            animate={{ clipPath: 'inset(0 0 0% 0)' }}
+            exit={{ clipPath: 'inset(0 0 100% 0)' }}
+            transition={{ duration: 0.7, ease }}
+          >
+            <button className="menu-close"
+              onClick={() => setMenuOpen(false)}
+              onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+            >
+              <span>Close</span>
+              <div className="menu-close-x"><span /><span /></div>
+            </button>
+
+            <nav className="menu-nav">
+              {navLinks.map((l, i) => (
+                <motion.a key={l.label} href={l.href} className="menu-nav-link"
+                  onClick={() => setMenuOpen(false)}
+                  initial={{ y: 80, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -30, opacity: 0 }}
+                  transition={{ duration: 0.5, delay: i * 0.07, ease }}
+                  onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+                >
+                  <span className="menu-nav-num">{String(i + 1).padStart(2, '0')}</span>
+                  {l.label}
+                </motion.a>
+              ))}
+            </nav>
+
+            <div className="menu-footer">
+              <span>India · Available Worldwide</span>
+              <span>hello@parthshoots.com</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── HERO ── */}
+      {!loading && (
+        <section className="hero" id="home">
+          <div className="hero-bg">
+            <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1800&q=80" alt="" />
+            <div className="hero-bg-veil" />
+          </div>
+
+          <div className="hero-content">
+            <div className="hero-titles">
+              <div className="hero-overflow">
+                <motion.h1 className="hero-word"
+                  initial={{ y: 130 }} animate={{ y: 0 }}
+                  transition={{ ...spring, delay: 0.1 }}
+                >PARTH</motion.h1>
+              </div>
+              <div className="hero-overflow">
+                <motion.h1 className="hero-word hero-word-indent"
+                  initial={{ y: 130 }} animate={{ y: 0 }}
+                  transition={{ ...spring, delay: 0.2 }}
+                >SHOOTS</motion.h1>
+              </div>
+            </div>
+
+            <motion.div className="hero-tag"
+              initial={{ opacity: 0, x: -24 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.9, delay: 0.75, ease }}
+            >
+              <span className="hero-tag-line" />
+              <span>Photographer · Visual Storyteller</span>
+            </motion.div>
+          </div>
+
+          <motion.div className="hero-foot"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            transition={{ delay: 1.1, duration: 0.9 }}
+          >
+            <span className="hero-meta">India · 2024</span>
+            <div className="hero-scroll">
+              <div className="hero-scroll-bar" />
+              <span>Scroll</span>
+            </div>
+            <span className="hero-meta">Available Worldwide</span>
+          </motion.div>
+        </section>
+      )}
+
+      {/* ── MARQUEE ── */}
+      {!loading && (
+        <div className="marquee-wrap">
+          <div className="marquee-track">
+            {Array.from({ length: 2 }, (_, s) =>
+              ['Portrait', 'Landscape', 'Street Photography', 'Travel', 'Architecture', 'Events', 'Wildlife'].map((item, i) => (
+                <span key={`${s}-${i}`} className="marquee-item">
+                  {item} <span className="marquee-dot">·</span>
+                </span>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── GALLERY ── */}
+      {!loading && (
+        <section className="gallery-section" id="gallery">
+          <div className="sec-head">
+            <motion.div className="sec-label"
+              initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }} transition={{ duration: 0.6, ease }}
+            >
+              <span className="sec-num">01</span><span>Selected Work</span>
+            </motion.div>
+            <div className="sec-title-wrap">
+              <motion.h2 className="sec-title"
+                initial={{ y: 110 }} whileInView={{ y: 0 }}
+                viewport={{ once: true }} transition={{ ...spring, delay: 0.1 }}
+              >Gallery</motion.h2>
+            </div>
+          </div>
+
+          <div className="gallery-body">
+            {groups.map((grp, gi) => (
+              <div key={gi} className="gallery-group">
+                <div className="gallery-sides">
+                  {grp[0] && (
+                    <PhotoCard
+                      photo={grp[0]}
+                      outerClass="g-item g-left"
+                      reveal="left"
+                      onOpen={() => setLightbox(grp[0])}
+                      setCursor={setCursorType}
+                    />
+                  )}
+                  {grp[1] && (
+                    <PhotoCard
+                      photo={grp[1]}
+                      outerClass="g-item g-right"
+                      reveal="right"
+                      delay={0.15}
+                      onOpen={() => setLightbox(grp[1])}
+                      setCursor={setCursorType}
+                    />
+                  )}
+                </div>
+                {grp[2] && (
+                  <PhotoCard
+                    photo={grp[2]}
+                    outerClass="g-center"
+                    reveal="up"
+                    delay={0.2}
+                    titleLarge
+                    onOpen={() => setLightbox(grp[2])}
+                    setCursor={setCursorType}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── LIGHTBOX ── */}
+      <AnimatePresence>
+        {lightbox && (
+          <motion.div className="lightbox"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.35 }}
+            onClick={() => { setLightbox(null); setCursorType('default') }}
+          >
+            <motion.div className="lb-content"
+              initial={{ scale: 0.88, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.88, opacity: 0 }}
+              transition={{ duration: 0.4, ease }}
+              onClick={e => e.stopPropagation()}
+            >
+              <img src={lightbox.src.replace('w=900', 'w=1600').replace('w=1400', 'w=1800')} alt={lightbox.title} />
+              <div className="lb-info">
+                <span className="lb-title">{lightbox.title}</span>
+                <span className="lb-cat">{lightbox.category}</span>
+              </div>
+            </motion.div>
+            <button className="lb-close"
+              onClick={() => { setLightbox(null); setCursorType('default') }}
+              onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+            >
+              <span /><span />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── CATEGORIES ── */}
+      {!loading && (
+        <section className="cats-section" id="categories">
+          <div className="sec-head sec-head-dark">
+            <motion.div className="sec-label sec-label-dark"
+              initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }} transition={{ duration: 0.6, ease }}
+            >
+              <span className="sec-num sec-num-dark">02</span><span>Browse By Type</span>
+            </motion.div>
+            <div className="sec-title-wrap">
+              <motion.h2 className="sec-title sec-title-dark"
+                initial={{ y: 110 }} whileInView={{ y: 0 }}
+                viewport={{ once: true }} transition={{ ...spring, delay: 0.1 }}
+              >Categories</motion.h2>
+            </div>
+          </div>
+
+          <div className="cats-grid">
+            {categories.map((cat, i) => (
+              <motion.div key={cat.name} className="cat-card"
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration: 0.7, delay: i * 0.08, ease }}
+                onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+              >
+                <div className="cat-img">
+                  <img src={cat.src} alt={cat.name} loading="lazy" />
+                  <div className="cat-veil" />
+                </div>
+                <div className="cat-info">
+                  <span className="cat-name">{cat.name}</span>
+                  <span className="cat-count">{cat.count} Photos</span>
+                </div>
+                <div className="cat-arrow">→</div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── ABOUT ── */}
+      {!loading && (
+        <section className="about-section" id="about">
+          <div className="sec-head">
+            <motion.div className="sec-label"
+              initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }} transition={{ duration: 0.6, ease }}
+            >
+              <span className="sec-num">03</span><span>The Story</span>
+            </motion.div>
+            <div className="sec-title-wrap">
+              <motion.h2 className="sec-title"
+                initial={{ y: 110 }} whileInView={{ y: 0 }}
+                viewport={{ once: true }} transition={{ ...spring, delay: 0.1 }}
+              >About Me</motion.h2>
+            </div>
+          </div>
+
+          <div className="about-body">
+            <motion.div className="about-img-wrap"
+              initial={{ opacity: 0, x: -60 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.0, ease }}
+            >
+              <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=900&q=80" alt="Parth" />
+              <div className="about-img-tag">
+                <span>Parth</span>
+                <span>Photographer</span>
+              </div>
+            </motion.div>
+
+            <div className="about-text">
+              {[
+                'A photographer with a passion for capturing fleeting moments — the quiet light before dawn, the raw energy of city streets, and the intimate stories hidden in everyday life.',
+                'Every frame is a conversation between light, shadow, and emotion. I believe in letting scenes breathe, finding the extraordinary in the ordinary.',
+                'Based in India, available worldwide for portraits, landscapes, events, and editorial work.',
+              ].map((para, i) => (
+                <motion.p key={i}
+                  initial={{ opacity: 0, y: 28 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: i * 0.14, ease }}
+                >{para}</motion.p>
+              ))}
+
+              <div className="about-stats">
+                {[{ n: '5+', l: 'Years' }, { n: '200+', l: 'Projects' }, { n: '12+', l: 'Countries' }].map((s, i) => (
+                  <motion.div key={i} className="a-stat"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, delay: 0.45 + i * 0.1, ease }}
+                  >
+                    <span className="a-stat-n">{s.n}</span>
+                    <span className="a-stat-l">{s.l}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── ORDERS ── */}
+      {!loading && (
+        <section className="orders-section" id="orders">
+          <div className="sec-head">
+            <motion.div className="sec-label"
+              initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }} transition={{ duration: 0.6, ease }}
+            >
+              <span className="sec-num">04</span><span>Book a Session</span>
+            </motion.div>
+            <div className="sec-title-wrap">
+              <motion.h2 className="sec-title"
+                initial={{ y: 110 }} whileInView={{ y: 0 }}
+                viewport={{ once: true }} transition={{ ...spring, delay: 0.1 }}
+              >Orders</motion.h2>
+            </div>
+          </div>
+
+          <div className="pkgs-grid">
+            {packages.map((pkg, i) => (
+              <motion.div key={pkg.name}
+                className={`pkg-card ${i === 1 ? 'pkg-featured' : ''}`}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7, delay: i * 0.12, ease }}
+                onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+              >
+                {i === 1 && <div className="pkg-badge">Most Popular</div>}
+                <div className="pkg-name">{pkg.name}</div>
+                <div className="pkg-price">{pkg.price}</div>
+                <ul className="pkg-features">
+                  {pkg.features.map(f => (
+                    <li key={f}><span className="f-check">✓</span>{f}</li>
+                  ))}
+                </ul>
+                <a href="mailto:hello@parthshoots.com" className="pkg-btn"
+                  onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+                >Book Now</a>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div className="orders-cta"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.4, ease }}
+          >
+            <p>Have a custom project in mind?</p>
+            <a href="mailto:hello@parthshoots.com" className="orders-email"
+              onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+            >hello@parthshoots.com</a>
+          </motion.div>
+        </section>
+      )}
+
+      {/* ── FOOTER ── */}
+      {!loading && (
+        <footer className="footer">
+          <div className="footer-top">
+            <div className="footer-brand">PARTH SHOOTS</div>
+            <div className="footer-nav">
+              {navLinks.map(l => (
+                <a key={l.label} href={l.href}
+                  onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+                >{l.label}</a>
+              ))}
+            </div>
+            <div className="footer-social">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
+                onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+              >Instagram</a>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer"
+                onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+              >X (Twitter)</a>
+            </div>
+          </div>
+          <div className="footer-bottom">
+            <span>(c) 2024 Parth Shoots</span>
+            <span>Built and Designed by Parth</span>
+          </div>
+        </footer>
+      )}
+    </>
+  )
+}
