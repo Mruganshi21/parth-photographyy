@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useInView } from 'framer-motion'
 import './index.css'
 
 const ease = [0.65, 0, 0.35, 1] as const
@@ -38,52 +38,40 @@ const categories = [
   { name: 'Events',        count: 30, src: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=700&q=80' },
 ]
 
-const packages = [
-  {
-    name: 'Basic',
-    price: '₹5,000',
-    features: ['2 Hour Session', '30 Edited Photos', 'Online Gallery', '1 Location'],
-  },
-  {
-    name: 'Standard',
-    price: '₹12,000',
-    features: ['4 Hour Session', '80 Edited Photos', 'Online Gallery', '2 Locations', 'Outfit Change'],
-  },
-  {
-    name: 'Premium',
-    price: '₹25,000',
-    features: ['Full Day Session', '200+ Edited Photos', 'Online Gallery', 'Unlimited Locations', 'Video Highlights', 'Print Pack'],
-  },
-]
 
 const navLinks = [
   { label: 'Gallery',    href: '#gallery'    },
   { label: 'Categories', href: '#categories' },
   { label: 'About',      href: '#about'      },
-  { label: 'Orders',     href: '#orders'     },
 ]
 
 type Photo = typeof photos[0]
 type CursorType = 'default' | 'hover' | 'view'
 
 function PhotoCard({
-  photo, outerClass, reveal, delay = 0, titleLarge = false, onOpen, setCursor,
+  photo, outerClass, delay = 0, titleLarge = false, onOpen, setCursor, photoIdx = 0,
 }: {
   photo: Photo
   outerClass: string
-  reveal: 'left' | 'right' | 'up'
   delay?: number
   titleLarge?: boolean
   onOpen: () => void
   setCursor: (t: CursorType) => void
+  photoIdx?: number
 }) {
-  const ref = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const tiltRef      = useRef<HTMLDivElement>(null)
+  const isInView     = useInView(containerRef, { once: true, amount: 0.1 })
+  const [revealed, setRevealed] = useState(false)
   const [tiltX, setTiltX] = useState(0)
   const [tiltY, setTiltY] = useState(0)
-  const [spot, setSpot] = useState({ x: 50, y: 50, on: false })
+  const [spot, setSpot]   = useState({ x: 50, y: 50, on: false })
+
+  // even-index cards zoom in (0.86→1), odd-index cards zoom out (1.14→1)
+  const zoomIn = photoIdx % 2 === 0
 
   function onMove(e: React.MouseEvent) {
-    const el = ref.current
+    const el = tiltRef.current
     if (!el) return
     const r = el.getBoundingClientRect()
     setTiltX(((e.clientY - r.top - r.height / 2) / (r.height / 2)) * -6)
@@ -97,62 +85,64 @@ function PhotoCard({
     setCursor('default')
   }
 
-  const scrollInit = reveal === 'left'
-    ? { opacity: 0, x: -70 }
-    : reveal === 'right'
-    ? { opacity: 0, x: 70 }
-    : { opacity: 0, y: 70 }
-
-  const scrollEnd = reveal === 'up' ? { opacity: 1, y: 0 } : { opacity: 1, x: 0 }
-
   return (
-    <motion.div
-      className={outerClass}
-      initial={scrollInit}
-      whileInView={scrollEnd}
-      viewport={{ once: true, margin: '-60px' }}
-      transition={{ duration: 0.9, delay, ease }}
-    >
-      <div
-        ref={ref}
-        className="g-tilt"
-        style={{
-          transform: `perspective(900px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale(${spot.on ? 1.02 : 1})`,
-          transition: spot.on ? 'transform 0.1s linear' : 'transform 0.65s cubic-bezier(0.25,0.46,0.45,0.94)',
-        }}
-        onMouseMove={onMove}
-        onMouseEnter={() => setCursor('view')}
-        onMouseLeave={onLeave}
-        onClick={onOpen}
+    <div ref={containerRef} className={outerClass}>
+      <motion.div
+        initial={{ opacity: 0, y: 48, scale: zoomIn ? 0.86 : 1.14, clipPath: 'inset(0 0 100% 0)' }}
+        animate={isInView
+          ? { opacity: 1, y: 0, scale: 1, clipPath: 'inset(0 0 0% 0)' }
+          : { opacity: 0, y: 48, scale: zoomIn ? 0.86 : 1.14, clipPath: 'inset(0 0 100% 0)' }
+        }
+        transition={{ duration: 1.15, delay, ease }}
+        onAnimationComplete={() => isInView && setRevealed(true)}
       >
-        <div className="g-inner">
-          <img
-            src={photo.src}
-            alt={photo.title}
-            loading="lazy"
-            style={{
-              transform: spot.on ? 'scale(1.07)' : 'scale(1)',
-              transition: 'transform 1s cubic-bezier(0.25,0.46,0.45,0.94)',
-            }}
-          />
-          <div
-            className="g-spotlight"
-            style={{
-              background: `radial-gradient(circle 240px at ${spot.x}% ${spot.y}%, rgba(255,255,255,0.18) 0%, transparent 70%)`,
-              opacity: spot.on ? 1 : 0,
-              transition: 'opacity 0.3s ease',
-            }}
-          />
-          <div className="g-overlay" style={{ opacity: spot.on ? 1 : 0, transition: 'opacity 0.4s ease' }}>
-            <span className="g-cat">{photo.category}</span>
-            <span
-              className={`g-title${titleLarge ? ' g-title-lg' : ''}`}
-              style={{ transform: spot.on ? 'translateY(0)' : 'translateY(6px)', transition: 'transform 0.4s ease' }}
-            >{photo.title}</span>
+        <div
+          ref={tiltRef}
+          className="g-tilt"
+          style={{
+            transform: `perspective(900px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale(${spot.on ? 1.02 : 1})`,
+            transition: spot.on ? 'transform 0.1s linear' : 'transform 0.65s cubic-bezier(0.25,0.46,0.45,0.94)',
+          }}
+          onMouseMove={onMove}
+          onMouseEnter={() => setCursor('view')}
+          onMouseLeave={onLeave}
+          onClick={onOpen}
+        >
+          <div className="g-inner">
+            <motion.img
+              src={photo.src}
+              alt={photo.title}
+              loading="lazy"
+              animate={
+                spot.on  ? { scale: 1.09 } :
+                revealed ? { scale: [1.0, 1.08, 1.0] } :
+                           { scale: 1.0 }
+              }
+              transition={
+                spot.on  ? { duration: 0.9,  ease: [0.25, 0.46, 0.45, 0.94] } :
+                revealed ? { duration: 8, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut' } :
+                           { duration: 0 }
+              }
+            />
+            <div
+              className="g-spotlight"
+              style={{
+                background: `radial-gradient(circle 240px at ${spot.x}% ${spot.y}%, rgba(255,255,255,0.18) 0%, transparent 70%)`,
+                opacity: spot.on ? 1 : 0,
+                transition: 'opacity 0.3s ease',
+              }}
+            />
+            <div className="g-overlay" style={{ opacity: spot.on ? 1 : 0, transition: 'opacity 0.4s ease' }}>
+              <span className="g-cat">{photo.category}</span>
+              <span
+                className={`g-title${titleLarge ? ' g-title-lg' : ''}`}
+                style={{ transform: spot.on ? 'translateY(0)' : 'translateY(6px)', transition: 'transform 0.4s ease' }}
+              >{photo.title}</span>
+            </div>
           </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </div>
   )
 }
 
@@ -164,10 +154,11 @@ export default function App() {
   const [lightbox, setLightbox]       = useState<Photo | null>(null)
   const [cursorType, setCursorType]   = useState<CursorType>('default')
 
-  const cursorRef  = useRef<HTMLDivElement>(null)
-  const dotRef     = useRef<HTMLDivElement>(null)
-  const mousePos   = useRef({ x: 0, y: 0 })
-  const cursorPos  = useRef({ x: 0, y: 0 })
+  const cursorRef   = useRef<HTMLDivElement>(null)
+  const dotRef      = useRef<HTMLDivElement>(null)
+  const mousePos    = useRef({ x: 0, y: 0 })
+  const cursorPos   = useRef({ x: 0, y: 0 })
+  const cursorAngle = useRef(45)
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     mousePos.current = { x: e.clientX, y: e.clientY }
@@ -179,11 +170,24 @@ export default function App() {
 
   useEffect(() => {
     const animate = () => {
-      cursorPos.current.x += (mousePos.current.x - cursorPos.current.x) * 0.13
-      cursorPos.current.y += (mousePos.current.y - cursorPos.current.y) * 0.13
+      const dx = mousePos.current.x - cursorPos.current.x
+      const dy = mousePos.current.y - cursorPos.current.y
+      const speed = Math.sqrt(dx * dx + dy * dy)
+
+      cursorPos.current.x += dx * 0.13
+      cursorPos.current.y += dy * 0.13
+
+      // Rotate the diamond toward the direction of travel; spring back to 45° at rest
+      const targetAngle = speed > 2 ? Math.atan2(dy, dx) * (180 / Math.PI) + 45 : 45
+      let diff = targetAngle - cursorAngle.current
+      if (diff > 180) diff -= 360
+      if (diff < -180) diff += 360
+      cursorAngle.current += diff * 0.12
+
       if (cursorRef.current) {
         cursorRef.current.style.left = `${cursorPos.current.x}px`
         cursorRef.current.style.top  = `${cursorPos.current.y}px`
+        cursorRef.current.style.setProperty('--cursor-r', `${cursorAngle.current}deg`)
       }
       requestAnimationFrame(animate)
     }
@@ -282,22 +286,13 @@ export default function App() {
         >
           <a href="#home" className="nav-logo">PS</a>
 
-          <div className="nav-right">
-            <ul className="nav-links">
-              {navLinks.map(l => (
-                <li key={l.label}>
-                  <a href={l.href} onMouseEnter={cv('hover')} onMouseLeave={cv('default')}>{l.label}</a>
-                </li>
-              ))}
-            </ul>
-            <button className="menu-btn"
-              onClick={() => setMenuOpen(true)}
-              onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
-            >
-              <span className="menu-btn-text">Menu</span>
-              <div className="menu-btn-bars"><span /><span /></div>
-            </button>
-          </div>
+          <button className="menu-btn"
+            onClick={() => setMenuOpen(true)}
+            onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+          >
+            <span className="menu-btn-text">Menu</span>
+            <div className="menu-btn-bars"><span /><span /></div>
+          </button>
         </motion.nav>
       )}
 
@@ -431,19 +426,19 @@ export default function App() {
                     <PhotoCard
                       photo={grp[0]}
                       outerClass="g-item g-left"
-                      reveal="left"
                       onOpen={() => setLightbox(grp[0])}
                       setCursor={setCursorType}
+                      photoIdx={gi * 3}
                     />
                   )}
                   {grp[1] && (
                     <PhotoCard
                       photo={grp[1]}
                       outerClass="g-item g-right"
-                      reveal="right"
                       delay={0.15}
                       onOpen={() => setLightbox(grp[1])}
                       setCursor={setCursorType}
+                      photoIdx={gi * 3 + 1}
                     />
                   )}
                 </div>
@@ -451,11 +446,11 @@ export default function App() {
                   <PhotoCard
                     photo={grp[2]}
                     outerClass="g-center"
-                    reveal="up"
-                    delay={0.2}
+                    delay={0.28}
                     titleLarge
                     onOpen={() => setLightbox(grp[2])}
                     setCursor={setCursorType}
+                    photoIdx={gi * 3 + 2}
                   />
                 )}
               </div>
@@ -601,62 +596,6 @@ export default function App() {
         </section>
       )}
 
-      {/* ── ORDERS ── */}
-      {!loading && (
-        <section className="orders-section" id="orders">
-          <div className="sec-head">
-            <motion.div className="sec-label"
-              initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} transition={{ duration: 0.6, ease }}
-            >
-              <span className="sec-num">04</span><span>Book a Session</span>
-            </motion.div>
-            <div className="sec-title-wrap">
-              <motion.h2 className="sec-title"
-                initial={{ y: 110 }} whileInView={{ y: 0 }}
-                viewport={{ once: true }} transition={{ ...spring, delay: 0.1 }}
-              >Orders</motion.h2>
-            </div>
-          </div>
-
-          <div className="pkgs-grid">
-            {packages.map((pkg, i) => (
-              <motion.div key={pkg.name}
-                className={`pkg-card ${i === 1 ? 'pkg-featured' : ''}`}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: i * 0.12, ease }}
-                onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
-              >
-                {i === 1 && <div className="pkg-badge">Most Popular</div>}
-                <div className="pkg-name">{pkg.name}</div>
-                <div className="pkg-price">{pkg.price}</div>
-                <ul className="pkg-features">
-                  {pkg.features.map(f => (
-                    <li key={f}><span className="f-check">✓</span>{f}</li>
-                  ))}
-                </ul>
-                <a href="mailto:hello@parthshoots.com" className="pkg-btn"
-                  onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
-                >Book Now</a>
-              </motion.div>
-            ))}
-          </div>
-
-          <motion.div className="orders-cta"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.4, ease }}
-          >
-            <p>Have a custom project in mind?</p>
-            <a href="mailto:hello@parthshoots.com" className="orders-email"
-              onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
-            >hello@parthshoots.com</a>
-          </motion.div>
-        </section>
-      )}
 
       {/* ── FOOTER ── */}
       {!loading && (
