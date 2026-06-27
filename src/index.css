@@ -608,7 +608,7 @@ img { display: block; }
 }
 .cats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 2px;
   padding: 0 3rem;
   max-width: 1440px;
@@ -667,6 +667,120 @@ img { display: block; }
   transition: color 0.3s ease, transform 0.3s ease;
 }
 .cat-card:hover .cat-arrow { color: #fff; transform: translate(5px,-5px); }
+
+/* ─── CATEGORY OVERLAY ─── */
+.catov {
+  position: fixed;
+  inset: 0;
+  background: #0c0c0c;
+  z-index: 9200;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.catov-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.4rem 2.5rem;
+  background: rgba(12,12,12,0.9);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.catov-back {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.45);
+  font-family: var(--fb);
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+  min-width: 80px;
+}
+.catov-back:hover { color: #fff; }
+.catov-back-arrow { font-size: 1.1rem; line-height: 1; }
+.catov-title-wrap { text-align: center; }
+.catov-title {
+  display: block;
+  font-family: var(--fd);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  line-height: 1.1;
+}
+.catov-count {
+  display: block;
+  font-size: 0.6rem;
+  color: rgba(255,255,255,0.28);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-top: 0.2rem;
+}
+.catov-close {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 50%;
+  transition: background 0.3s ease;
+  min-width: 38px;
+}
+.catov-close:hover { background: rgba(255,255,255,0.14); }
+.catov-close span {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 14px; height: 1px;
+  background: rgba(255,255,255,0.7);
+}
+.catov-close span:first-child { transform: translate(-50%,-50%) rotate(45deg); }
+.catov-close span:last-child  { transform: translate(-50%,-50%) rotate(-45deg); }
+
+.catov-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 3px;
+  padding: 3px;
+}
+.catov-item {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  cursor: none;
+}
+.catov-item img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.65s cubic-bezier(0.25,0.46,0.45,0.94), filter 0.4s ease;
+  filter: brightness(0.82);
+}
+.catov-item:hover img { transform: scale(1.07); filter: brightness(1); }
+.catov-item-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%);
+  display: flex;
+  align-items: flex-end;
+  padding: 0.9rem 1rem;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.catov-item:hover .catov-item-overlay { opacity: 1; }
+.catov-item-num {
+  font-family: var(--fd);
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.2em;
+}
 
 /* ─── ABOUT ─── */
 .about-section { background: var(--bg); padding-bottom: 8rem; }
@@ -810,7 +924,7 @@ img { display: block; }
   .g-center { width: 92%; margin-top: 1rem; }
   .g-center .g-inner { height: 400px; }
 
-  .cats-grid { grid-template-columns: 1fr; padding: 0 1.5rem; }
+  .cats-grid { grid-template-columns: repeat(2, 1fr); padding: 0 1.5rem; }
   .about-body { padding: 0 1.5rem; }
   .sec-head { padding: 4rem 1.5rem 2.5rem; }
   .footer-top { grid-template-columns: 1fr; gap: 2rem; }
@@ -818,9 +932,13 @@ img { display: block; }
   .footer-bottom { flex-direction: column; gap: 0.5rem; align-items: center; }
   .menu-overlay { padding: 2rem 2.5rem; }
   .menu-footer { left: 2.5rem; right: 2.5rem; }
+  .catov-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
 }
 
 @media (max-width: 600px) {
+  .cats-grid { grid-template-columns: 1fr; }
+  .catov-grid { grid-template-columns: repeat(2, 1fr); }
+  .catov-header { padding: 1rem 1.2rem; }
   .hero-word {
     font-size: clamp(4rem, 22vw, 8rem);
     letter-spacing: -3px;

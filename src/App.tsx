@@ -29,13 +29,161 @@ const photos = [
   { id: 12, src: 'https://images.unsplash.com/photo-1504198453319-5ce911bafcde?w=1400&q=80', title: 'Desert Road',    category: 'Travel'        },
 ]
 
+const categoryPhotos: Record<string, { id: number; src: string; title: string; category: string }[]> = {
+  'Live Events': [
+    { id: 2001, src: '/categories/Live Events/23-DSC02359.jpg',   title: 'DSC02359', category: 'Live Events' },
+    { id: 2002, src: '/categories/Live Events/87-DSC04896.jpg',   title: 'DSC04896', category: 'Live Events' },
+    { id: 2003, src: '/categories/Live Events/88-DSC04884.jpg',   title: 'DSC04884', category: 'Live Events' },
+    { id: 2004, src: '/categories/Live Events/91-DSC04746.jpg',   title: 'DSC04746', category: 'Live Events' },
+    { id: 2005, src: '/categories/Live Events/92-DSC04598.jpg',   title: 'DSC04598', category: 'Live Events' },
+    { id: 2006, src: '/categories/Live Events/93-DSC04592.jpg',   title: 'DSC04592', category: 'Live Events' },
+    { id: 2007, src: '/categories/Live Events/94-DSC04579.jpg',   title: 'DSC04579', category: 'Live Events' },
+    { id: 2008, src: '/categories/Live Events/99-DSC03329.jpg',   title: 'DSC03329', category: 'Live Events' },
+    { id: 2009, src: '/categories/Live Events/100-DSC03323.jpg',  title: 'DSC03323', category: 'Live Events' },
+    { id: 2010, src: '/categories/Live Events/101-DSC03299.jpg',  title: 'DSC03299', category: 'Live Events' },
+    { id: 2011, src: '/categories/Live Events/102-DSC03118.jpg',  title: 'DSC03118', category: 'Live Events' },
+    { id: 2012, src: '/categories/Live Events/103-DSC03103.jpg',  title: 'DSC03103', category: 'Live Events' },
+    { id: 2013, src: '/categories/Live Events/104-DSC03093.jpg',  title: 'DSC03093', category: 'Live Events' },
+    { id: 2014, src: '/categories/Live Events/105-DSC03070.jpg',  title: 'DSC03070', category: 'Live Events' },
+  ],
+  'Portraits': [
+    { id: 2015, src: '/categories/Portraits/24-DSC02322.jpg',   title: 'DSC02322', category: 'Portraits' },
+    { id: 2016, src: '/categories/Portraits/25-DSC02292.jpg',   title: 'DSC02292', category: 'Portraits' },
+    { id: 2017, src: '/categories/Portraits/26-DSC02189.jpg',   title: 'DSC02189', category: 'Portraits' },
+    { id: 2018, src: '/categories/Portraits/27-DSC02178.jpg',   title: 'DSC02178', category: 'Portraits' },
+    { id: 2019, src: '/categories/Portraits/46-DSC08734.jpg',   title: 'DSC08734', category: 'Portraits' },
+    { id: 2020, src: '/categories/Portraits/47-DSC08731.jpg',   title: 'DSC08731', category: 'Portraits' },
+    { id: 2021, src: '/categories/Portraits/55-DSC08217.jpg',   title: 'DSC08217', category: 'Portraits' },
+    { id: 2022, src: '/categories/Portraits/59-DSC07906.jpg',   title: 'DSC07906', category: 'Portraits' },
+    { id: 2023, src: '/categories/Portraits/60-DSC07839.jpg',   title: 'DSC07839', category: 'Portraits' },
+    { id: 2024, src: '/categories/Portraits/79-DSC05133.jpg',   title: 'DSC05133', category: 'Portraits' },
+    { id: 2025, src: '/categories/Portraits/80-DSC05127.jpg',   title: 'DSC05127', category: 'Portraits' },
+    { id: 2026, src: '/categories/Portraits/81-DSC05022.jpg',   title: 'DSC05022', category: 'Portraits' },
+    { id: 2027, src: '/categories/Portraits/82-DSC05013.jpg',   title: 'DSC05013', category: 'Portraits' },
+    { id: 2028, src: '/categories/Portraits/83-DSC05010.jpg',   title: 'DSC05010', category: 'Portraits' },
+    { id: 2029, src: '/categories/Portraits/84-DSC05008.jpg',   title: 'DSC05008', category: 'Portraits' },
+    { id: 2030, src: '/categories/Portraits/85-DSC05006.jpg',   title: 'DSC05006', category: 'Portraits' },
+    { id: 2031, src: '/categories/Portraits/86-DSC04903.jpg',   title: 'DSC04903', category: 'Portraits' },
+    { id: 2032, src: '/categories/Portraits/89-DSC04880.jpg',   title: 'DSC04880', category: 'Portraits' },
+    { id: 2033, src: '/categories/Portraits/90-DSC04874.jpg',   title: 'DSC04874', category: 'Portraits' },
+    { id: 2034, src: '/categories/Portraits/95-DSC04336.jpg',   title: 'DSC04336', category: 'Portraits' },
+    { id: 2035, src: '/categories/Portraits/96-DSC04287.jpg',   title: 'DSC04287', category: 'Portraits' },
+    { id: 2036, src: '/categories/Portraits/97-DSC04286.jpg',   title: 'DSC04286', category: 'Portraits' },
+    { id: 2037, src: '/categories/Portraits/98-DSC03428.jpg',   title: 'DSC03428', category: 'Portraits' },
+    { id: 2038, src: '/categories/Portraits/116-DSC08736.jpg',  title: 'DSC08736', category: 'Portraits' },
+    { id: 2039, src: '/categories/Portraits/120-DSC07946.jpg',  title: 'DSC07946', category: 'Portraits' },
+    { id: 2040, src: '/categories/Portraits/123-DSC07803.jpg',  title: 'DSC07803', category: 'Portraits' },
+  ],
+  'Product Spotlight': [
+    { id: 2041, src: '/categories/Product Spotlight/1-DSC03703.jpg',     title: 'DSC03703',   category: 'Product Spotlight' },
+    { id: 2042, src: '/categories/Product Spotlight/2-DSC03677.jpg',     title: 'DSC03677',   category: 'Product Spotlight' },
+    { id: 2043, src: '/categories/Product Spotlight/3-DSC03672.jpg',     title: 'DSC03672',   category: 'Product Spotlight' },
+    { id: 2044, src: '/categories/Product Spotlight/4-DSC03671.jpg',     title: 'DSC03671',   category: 'Product Spotlight' },
+    { id: 2045, src: '/categories/Product Spotlight/5-DSC03654.jpg',     title: 'DSC03654',   category: 'Product Spotlight' },
+    { id: 2046, src: '/categories/Product Spotlight/6-DSC03651.jpg',     title: 'DSC03651',   category: 'Product Spotlight' },
+    { id: 2047, src: '/categories/Product Spotlight/7-DSC03614.jpg',     title: 'DSC03614',   category: 'Product Spotlight' },
+    { id: 2048, src: '/categories/Product Spotlight/8-DSC03607.jpg',     title: 'DSC03607',   category: 'Product Spotlight' },
+    { id: 2049, src: '/categories/Product Spotlight/9-DSC03574.jpg',     title: 'DSC03574',   category: 'Product Spotlight' },
+    { id: 2050, src: '/categories/Product Spotlight/10-DSC03564.jpg',    title: 'DSC03564',   category: 'Product Spotlight' },
+    { id: 2051, src: '/categories/Product Spotlight/11-DSC03561.jpg',    title: 'DSC03561',   category: 'Product Spotlight' },
+    { id: 2052, src: '/categories/Product Spotlight/12-DSC03560.jpg',    title: 'DSC03560',   category: 'Product Spotlight' },
+    { id: 2053, src: '/categories/Product Spotlight/13-DSC03543.jpg',    title: 'DSC03543',   category: 'Product Spotlight' },
+    { id: 2054, src: '/categories/Product Spotlight/14-DSC03540.jpg',    title: 'DSC03540',   category: 'Product Spotlight' },
+    { id: 2055, src: '/categories/Product Spotlight/15-DSC03537.jpg',    title: 'DSC03537',   category: 'Product Spotlight' },
+    { id: 2056, src: '/categories/Product Spotlight/16-DSC03536.jpg',    title: 'DSC03536',   category: 'Product Spotlight' },
+    { id: 2057, src: '/categories/Product Spotlight/17-DSC03526.jpg',    title: 'DSC03526',   category: 'Product Spotlight' },
+    { id: 2058, src: '/categories/Product Spotlight/18-DSC03525.jpg',    title: 'DSC03525',   category: 'Product Spotlight' },
+    { id: 2059, src: '/categories/Product Spotlight/19-DSC03524.jpg',    title: 'DSC03524',   category: 'Product Spotlight' },
+    { id: 2060, src: '/categories/Product Spotlight/20-DSC03522.jpg',    title: 'DSC03522',   category: 'Product Spotlight' },
+    { id: 2061, src: '/categories/Product Spotlight/21-DSC03521.jpg',    title: 'DSC03521',   category: 'Product Spotlight' },
+    { id: 2062, src: '/categories/Product Spotlight/22-DSC03513.jpg',    title: 'DSC03513',   category: 'Product Spotlight' },
+    { id: 2063, src: '/categories/Product Spotlight/28-DSC01906.jpg',    title: 'DSC01906',   category: 'Product Spotlight' },
+    { id: 2064, src: '/categories/Product Spotlight/29-DSC01889.jpg',    title: 'DSC01889',   category: 'Product Spotlight' },
+    { id: 2065, src: '/categories/Product Spotlight/30-DSC01857.jpg',    title: 'DSC01857',   category: 'Product Spotlight' },
+    { id: 2066, src: '/categories/Product Spotlight/31-DSC01853.jpg',    title: 'DSC01853',   category: 'Product Spotlight' },
+    { id: 2067, src: '/categories/Product Spotlight/32-DSC01847.jpg',    title: 'DSC01847',   category: 'Product Spotlight' },
+    { id: 2068, src: '/categories/Product Spotlight/33-DSC01844.jpg',    title: 'DSC01844',   category: 'Product Spotlight' },
+    { id: 2069, src: '/categories/Product Spotlight/34-DSC01841.jpg',    title: 'DSC01841',   category: 'Product Spotlight' },
+    { id: 2070, src: '/categories/Product Spotlight/35-DSC01839.jpg',    title: 'DSC01839',   category: 'Product Spotlight' },
+    { id: 2071, src: '/categories/Product Spotlight/62-DSC06745.jpg',    title: 'DSC06745',   category: 'Product Spotlight' },
+    { id: 2072, src: '/categories/Product Spotlight/63-DSC06703.jpg',    title: 'DSC06703',   category: 'Product Spotlight' },
+    { id: 2073, src: '/categories/Product Spotlight/64-DSC06693.jpg',    title: 'DSC06693',   category: 'Product Spotlight' },
+    { id: 2074, src: '/categories/Product Spotlight/65-DSC06691.jpg',    title: 'DSC06691',   category: 'Product Spotlight' },
+    { id: 2075, src: '/categories/Product Spotlight/66-DSC06629.jpg',    title: 'DSC06629',   category: 'Product Spotlight' },
+    { id: 2076, src: '/categories/Product Spotlight/67-DSC06685.jpg',    title: 'DSC06685',   category: 'Product Spotlight' },
+    { id: 2077, src: '/categories/Product Spotlight/68-DSC06617.jpg',    title: 'DSC06617',   category: 'Product Spotlight' },
+    { id: 2078, src: '/categories/Product Spotlight/127-DSC03575.jpg',   title: 'DSC03575',   category: 'Product Spotlight' },
+    { id: 2079, src: '/categories/Product Spotlight/128-DSC03136.jpg',   title: 'DSC03136',   category: 'Product Spotlight' },
+    { id: 2080, src: '/categories/Product Spotlight/129-DSC03135.jpg',   title: 'DSC03135',   category: 'Product Spotlight' },
+    { id: 2081, src: '/categories/Product Spotlight/130-DSC03132.jpg',   title: 'DSC03132',   category: 'Product Spotlight' },
+    { id: 2082, src: '/categories/Product Spotlight/131-DSC03128.jpg',   title: 'DSC03128',   category: 'Product Spotlight' },
+    { id: 2083, src: '/categories/Product Spotlight/132-DSC03127.jpg',   title: 'DSC03127',   category: 'Product Spotlight' },
+    { id: 2084, src: '/categories/Product Spotlight/133-DSC03123.jpg',   title: 'DSC03123',   category: 'Product Spotlight' },
+    { id: 2085, src: '/categories/Product Spotlight/134-DSC03117.jpg',   title: 'DSC03117',   category: 'Product Spotlight' },
+    { id: 2086, src: '/categories/Product Spotlight/135-DSC03103_1.jpg', title: 'DSC03103',   category: 'Product Spotlight' },
+    { id: 2087, src: '/categories/Product Spotlight/136-DSC03009.jpg',   title: 'DSC03009',   category: 'Product Spotlight' },
+    { id: 2088, src: '/categories/Product Spotlight/137-DSC03007.jpg',   title: 'DSC03007',   category: 'Product Spotlight' },
+    { id: 2089, src: '/categories/Product Spotlight/138-DSC02999.jpg',   title: 'DSC02999',   category: 'Product Spotlight' },
+    { id: 2090, src: '/categories/Product Spotlight/139-DSC02983.jpg',   title: 'DSC02983',   category: 'Product Spotlight' },
+  ],
+  'Wedding Stories': [
+    { id: 2091, src: '/categories/Wedding Stories/36-DSC00725.jpg',   title: 'DSC00725', category: 'Wedding Stories' },
+    { id: 2092, src: '/categories/Wedding Stories/37-DSC09763.jpg',   title: 'DSC09763', category: 'Wedding Stories' },
+    { id: 2093, src: '/categories/Wedding Stories/38-DSC08949.jpg',   title: 'DSC08949', category: 'Wedding Stories' },
+    { id: 2094, src: '/categories/Wedding Stories/39-DSC08947.jpg',   title: 'DSC08947', category: 'Wedding Stories' },
+    { id: 2095, src: '/categories/Wedding Stories/40-DSC08908.jpg',   title: 'DSC08908', category: 'Wedding Stories' },
+    { id: 2096, src: '/categories/Wedding Stories/41-DSC08902.jpg',   title: 'DSC08902', category: 'Wedding Stories' },
+    { id: 2097, src: '/categories/Wedding Stories/42-DSC08883.jpg',   title: 'DSC08883', category: 'Wedding Stories' },
+    { id: 2098, src: '/categories/Wedding Stories/43-DSC08882.jpg',   title: 'DSC08882', category: 'Wedding Stories' },
+    { id: 2099, src: '/categories/Wedding Stories/44-DSC08753.jpg',   title: 'DSC08753', category: 'Wedding Stories' },
+    { id: 2100, src: '/categories/Wedding Stories/45-DSC08748.jpg',   title: 'DSC08748', category: 'Wedding Stories' },
+    { id: 2101, src: '/categories/Wedding Stories/48-DSC08725.jpg',   title: 'DSC08725', category: 'Wedding Stories' },
+    { id: 2102, src: '/categories/Wedding Stories/49-DSC08650.jpg',   title: 'DSC08650', category: 'Wedding Stories' },
+    { id: 2103, src: '/categories/Wedding Stories/50-DSC08636.jpg',   title: 'DSC08636', category: 'Wedding Stories' },
+    { id: 2104, src: '/categories/Wedding Stories/51-DSC08614.jpg',   title: 'DSC08614', category: 'Wedding Stories' },
+    { id: 2105, src: '/categories/Wedding Stories/52-DSC08562.jpg',   title: 'DSC08562', category: 'Wedding Stories' },
+    { id: 2106, src: '/categories/Wedding Stories/53-DSC08307.jpg',   title: 'DSC08307', category: 'Wedding Stories' },
+    { id: 2107, src: '/categories/Wedding Stories/54-DSC08256.jpg',   title: 'DSC08256', category: 'Wedding Stories' },
+    { id: 2108, src: '/categories/Wedding Stories/56-DSC08179.jpg',   title: 'DSC08179', category: 'Wedding Stories' },
+    { id: 2109, src: '/categories/Wedding Stories/57-DSC08051.jpg',   title: 'DSC08051', category: 'Wedding Stories' },
+    { id: 2110, src: '/categories/Wedding Stories/58-DSC08027.jpg',   title: 'DSC08027', category: 'Wedding Stories' },
+    { id: 2111, src: '/categories/Wedding Stories/61-DSC07668.jpg',   title: 'DSC07668', category: 'Wedding Stories' },
+    { id: 2112, src: '/categories/Wedding Stories/69-DSC06225.jpg',   title: 'DSC06225', category: 'Wedding Stories' },
+    { id: 2113, src: '/categories/Wedding Stories/70-DSC06084.jpg',   title: 'DSC06084', category: 'Wedding Stories' },
+    { id: 2114, src: '/categories/Wedding Stories/71-DSC06059.jpg',   title: 'DSC06059', category: 'Wedding Stories' },
+    { id: 2115, src: '/categories/Wedding Stories/72-DSC06048.jpg',   title: 'DSC06048', category: 'Wedding Stories' },
+    { id: 2116, src: '/categories/Wedding Stories/73-DSC05980.jpg',   title: 'DSC05980', category: 'Wedding Stories' },
+    { id: 2117, src: '/categories/Wedding Stories/74-DSC05974.jpg',   title: 'DSC05974', category: 'Wedding Stories' },
+    { id: 2118, src: '/categories/Wedding Stories/75-DSC05723.jpg',   title: 'DSC05723', category: 'Wedding Stories' },
+    { id: 2119, src: '/categories/Wedding Stories/76-DSC05712.jpg',   title: 'DSC05712', category: 'Wedding Stories' },
+    { id: 2120, src: '/categories/Wedding Stories/77-DSC05290.jpg',   title: 'DSC05290', category: 'Wedding Stories' },
+    { id: 2121, src: '/categories/Wedding Stories/78-DSC05284.jpg',   title: 'DSC05284', category: 'Wedding Stories' },
+    { id: 2122, src: '/categories/Wedding Stories/106-DSC02447.jpg',  title: 'DSC02447', category: 'Wedding Stories' },
+    { id: 2123, src: '/categories/Wedding Stories/107-DSC01213.jpg',  title: 'DSC01213', category: 'Wedding Stories' },
+    { id: 2124, src: '/categories/Wedding Stories/108-DSC01066.jpg',  title: 'DSC01066', category: 'Wedding Stories' },
+    { id: 2125, src: '/categories/Wedding Stories/109-DSC00943.jpg',  title: 'DSC00943', category: 'Wedding Stories' },
+    { id: 2126, src: '/categories/Wedding Stories/110-DSC09564.jpg',  title: 'DSC09564', category: 'Wedding Stories' },
+    { id: 2127, src: '/categories/Wedding Stories/111-DSC09438.jpg',  title: 'DSC09438', category: 'Wedding Stories' },
+    { id: 2128, src: '/categories/Wedding Stories/112-DSC09376.jpg',  title: 'DSC09376', category: 'Wedding Stories' },
+    { id: 2129, src: '/categories/Wedding Stories/113-DSC09185.jpg',  title: 'DSC09185', category: 'Wedding Stories' },
+    { id: 2130, src: '/categories/Wedding Stories/114-DSC09184.jpg',  title: 'DSC09184', category: 'Wedding Stories' },
+    { id: 2131, src: '/categories/Wedding Stories/115-DSC09108.jpg',  title: 'DSC09108', category: 'Wedding Stories' },
+    { id: 2132, src: '/categories/Wedding Stories/117-DSC08590.jpg',  title: 'DSC08590', category: 'Wedding Stories' },
+    { id: 2133, src: '/categories/Wedding Stories/118-DSC08418.jpg',  title: 'DSC08418', category: 'Wedding Stories' },
+    { id: 2134, src: '/categories/Wedding Stories/119-DSC08361.jpg',  title: 'DSC08361', category: 'Wedding Stories' },
+    { id: 2135, src: '/categories/Wedding Stories/121-DSC07888.jpg',  title: 'DSC07888', category: 'Wedding Stories' },
+    { id: 2136, src: '/categories/Wedding Stories/122-DSC07809.jpg',  title: 'DSC07809', category: 'Wedding Stories' },
+    { id: 2137, src: '/categories/Wedding Stories/124-DSC07788.jpg',  title: 'DSC07788', category: 'Wedding Stories' },
+    { id: 2138, src: '/categories/Wedding Stories/125-DSC06030.jpg',  title: 'DSC06030', category: 'Wedding Stories' },
+    { id: 2139, src: '/categories/Wedding Stories/126-DSC05893.jpg',  title: 'DSC05893', category: 'Wedding Stories' },
+  ],
+}
+
 const categories = [
-  { name: 'Portrait',      count: 48, src: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=700&q=80' },
-  { name: 'Landscape',     count: 36, src: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=700&q=80' },
-  { name: 'Street',        count: 24, src: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=700&q=80' },
-  { name: 'Travel',        count: 62, src: 'https://images.unsplash.com/photo-1504198453319-5ce911bafcde?w=700&q=80' },
-  { name: 'Architecture',  count: 18, src: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=700&q=80' },
-  { name: 'Events',        count: 30, src: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=700&q=80' },
+  { name: 'Live Events',       count: 14, src: '/categories/Live Events/100-DSC03323.jpg'       },
+  { name: 'Portraits',         count: 26, src: '/categories/Portraits/116-DSC08736.jpg'          },
+  { name: 'Product Spotlight', count: 50, src: '/categories/Product Spotlight/10-DSC03564.jpg'  },
+  { name: 'Wedding Stories',   count: 49, src: '/categories/Wedding Stories/106-DSC02447.jpg'   },
 ]
 
 
@@ -146,13 +294,80 @@ function PhotoCard({
   )
 }
 
+function CategoryOverlay({
+  name, photos, lightboxOpen, onClose, onPhotoClick, setCursor,
+}: {
+  name: string
+  photos: { id: number; src: string; title: string; category: string }[]
+  lightboxOpen: boolean
+  onClose: () => void
+  onPhotoClick: (p: Photo) => void
+  setCursor: (t: CursorType) => void
+}) {
+  useEffect(() => {
+    if (lightboxOpen) return
+    const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', fn)
+    return () => window.removeEventListener('keydown', fn)
+  }, [onClose, lightboxOpen])
+
+  return (
+    <motion.div
+      className="catov"
+      initial={{ y: '100%' }}
+      animate={{ y: 0 }}
+      exit={{ y: '100%' }}
+      transition={{ duration: 0.55, ease }}
+    >
+      <div className="catov-header">
+        <button className="catov-back" onClick={onClose}
+          onMouseEnter={() => setCursor('hover')} onMouseLeave={() => setCursor('default')}
+        >
+          <span className="catov-back-arrow">←</span>
+          <span>Back</span>
+        </button>
+        <div className="catov-title-wrap">
+          <h2 className="catov-title">{name}</h2>
+          <span className="catov-count">{photos.length} photos</span>
+        </div>
+        <button className="catov-close" onClick={onClose}
+          onMouseEnter={() => setCursor('hover')} onMouseLeave={() => setCursor('default')}
+        >
+          <span /><span />
+        </button>
+      </div>
+
+      <div className="catov-grid">
+        {photos.map((photo, i) => (
+          <motion.div
+            key={photo.id}
+            className="catov-item"
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, delay: Math.min(i * 0.025, 0.7), ease }}
+            onClick={() => onPhotoClick(photo as Photo)}
+            onMouseEnter={() => setCursor('view')}
+            onMouseLeave={() => setCursor('default')}
+          >
+            <img src={photo.src} alt={photo.title} loading="lazy" />
+            <div className="catov-item-overlay">
+              <span className="catov-item-num">{String(i + 1).padStart(2, '0')}</span>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
+  )
+}
+
 export default function App() {
   const [loading, setLoading]         = useState(true)
   const [loaderPhase, setLoaderPhase] = useState(0)
   const [slideIndex, setSlideIndex]   = useState(0)
   const [menuOpen, setMenuOpen]       = useState(false)
   const [lightbox, setLightbox]       = useState<Photo | null>(null)
-  const [cursorType, setCursorType]   = useState<CursorType>('default')
+  const [cursorType, setCursorType]     = useState<CursorType>('default')
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
   const cursorRef   = useRef<HTMLDivElement>(null)
   const dotRef      = useRef<HTMLDivElement>(null)
@@ -390,7 +605,7 @@ export default function App() {
         <div className="marquee-wrap">
           <div className="marquee-track">
             {Array.from({ length: 2 }, (_, s) =>
-              ['Portrait', 'Landscape', 'Street Photography', 'Travel', 'Architecture', 'Events', 'Wildlife'].map((item, i) => (
+              ['Live Events', 'Portraits', 'Product Spotlight', 'Wedding Stories', 'Live Events', 'Portraits', 'Product Spotlight'].map((item, i) => (
                 <span key={`${s}-${i}`} className="marquee-item">
                   {item} <span className="marquee-dot">·</span>
                 </span>
@@ -490,6 +705,20 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      {/* ── CATEGORY OVERLAY ── */}
+      <AnimatePresence>
+        {selectedCategory && (
+          <CategoryOverlay
+            name={selectedCategory}
+            photos={categoryPhotos[selectedCategory] ?? []}
+            lightboxOpen={!!lightbox}
+            onClose={() => setSelectedCategory(null)}
+            onPhotoClick={p => setLightbox(p)}
+            setCursor={setCursorType}
+          />
+        )}
+      </AnimatePresence>
+
       {/* ── CATEGORIES ── */}
       {!loading && (
         <section className="cats-section" id="categories">
@@ -516,6 +745,7 @@ export default function App() {
                 viewport={{ once: true, margin: '-40px' }}
                 transition={{ duration: 0.7, delay: i * 0.08, ease }}
                 onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+                onClick={() => setSelectedCategory(cat.name)}
               >
                 <div className="cat-img">
                   <img src={cat.src} alt={cat.name} loading="lazy" />
