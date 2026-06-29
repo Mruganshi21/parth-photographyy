@@ -196,8 +196,19 @@ const navLinks = [
 type Photo = typeof photos[0]
 type CursorType = 'default' | 'hover' | 'view'
 
+const preloaded = new Set<string>()
+function preloadCategory(name: string) {
+  const imgs = categoryPhotos[name] ?? []
+  imgs.forEach(p => {
+    if (preloaded.has(p.src)) return
+    preloaded.add(p.src)
+    const img = new Image()
+    img.src = p.src
+  })
+}
+
 function PhotoCard({
-  photo, outerClass, delay = 0, titleLarge = false, onOpen, setCursor, photoIdx = 0,
+  photo, outerClass, delay = 0, titleLarge = false, onOpen, setCursor, photoIdx = 0, paused = false,
 }: {
   photo: Photo
   outerClass: string
@@ -206,6 +217,7 @@ function PhotoCard({
   onOpen: () => void
   setCursor: (t: CursorType) => void
   photoIdx?: number
+  paused?: boolean
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const tiltRef      = useRef<HTMLDivElement>(null)
@@ -262,14 +274,14 @@ function PhotoCard({
               alt={photo.title}
               loading="lazy"
               animate={
-                spot.on  ? { scale: 1.09 } :
-                revealed ? { scale: [1.0, 1.08, 1.0] } :
-                           { scale: 1.0 }
+                spot.on             ? { scale: 1.09 } :
+                revealed && !paused ? { scale: [1.0, 1.08, 1.0] } :
+                                      { scale: 1.0 }
               }
               transition={
-                spot.on  ? { duration: 0.9,  ease: [0.25, 0.46, 0.45, 0.94] } :
-                revealed ? { duration: 8, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut' } :
-                           { duration: 0 }
+                spot.on             ? { duration: 0.9,  ease: [0.25, 0.46, 0.45, 0.94] } :
+                revealed && !paused ? { duration: 8, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut' } :
+                                      { duration: 0 }
               }
             />
             <div
@@ -314,10 +326,10 @@ function CategoryOverlay({
   return (
     <motion.div
       className="catov"
-      initial={{ y: '100%' }}
-      animate={{ y: 0 }}
-      exit={{ y: '100%' }}
-      transition={{ duration: 0.55, ease }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.22, ease: 'easeOut' }}
     >
       <div className="catov-header">
         <button className="catov-back" onClick={onClose}
@@ -339,21 +351,18 @@ function CategoryOverlay({
 
       <div className="catov-grid">
         {photos.map((photo, i) => (
-          <motion.div
+          <div
             key={photo.id}
             className="catov-item"
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4, delay: Math.min(i * 0.025, 0.7), ease }}
             onClick={() => onPhotoClick(photo as Photo)}
             onMouseEnter={() => setCursor('view')}
             onMouseLeave={() => setCursor('default')}
           >
-            <img src={photo.src} alt={photo.title} loading="lazy" />
+            <img src={photo.src} alt={photo.title} />
             <div className="catov-item-overlay">
               <span className="catov-item-num">{String(i + 1).padStart(2, '0')}</span>
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
     </motion.div>
@@ -366,7 +375,6 @@ export default function App() {
   const [slideIndex, setSlideIndex]   = useState(0)
   const [menuOpen, setMenuOpen]       = useState(false)
   const [lightbox, setLightbox]       = useState<Photo | null>(null)
-  const [cursorType, setCursorType]     = useState<CursorType>('default')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
   const cursorRef   = useRef<HTMLDivElement>(null)
@@ -434,6 +442,21 @@ export default function App() {
     return () => window.removeEventListener('keydown', fn)
   }, [lightbox])
 
+  const setCursorType = useCallback((t: CursorType) => {
+    const el = cursorRef.current
+    if (!el) return
+    el.className = `cursor cursor-${t}`
+    const existing = el.querySelector<HTMLSpanElement>('.cursor-label')
+    if (t === 'view' && !existing) {
+      const span = document.createElement('span')
+      span.className = 'cursor-label'
+      span.textContent = 'VIEW'
+      el.appendChild(span)
+    } else if (t !== 'view' && existing) {
+      existing.remove()
+    }
+  }, [])
+
   // Group photos: every 3 → [left, right, center-large]
   const groups: Photo[][] = []
   for (let i = 0; i < photos.length; i += 3) groups.push(photos.slice(i, i + 3))
@@ -443,9 +466,7 @@ export default function App() {
   return (
     <>
       {/* ── CURSOR ── */}
-      <div ref={cursorRef} className={`cursor cursor-${cursorType}`}>
-        {cursorType === 'view' && <span className="cursor-label">VIEW</span>}
-      </div>
+      <div ref={cursorRef} className="cursor cursor-default" />
       <div ref={dotRef} className="cursor-dot" />
 
       {/* ── LOADER ── */}
@@ -644,6 +665,7 @@ export default function App() {
                       onOpen={() => setLightbox(grp[0])}
                       setCursor={setCursorType}
                       photoIdx={gi * 3}
+                      paused={!!selectedCategory}
                     />
                   )}
                   {grp[1] && (
@@ -654,6 +676,7 @@ export default function App() {
                       onOpen={() => setLightbox(grp[1])}
                       setCursor={setCursorType}
                       photoIdx={gi * 3 + 1}
+                      paused={!!selectedCategory}
                     />
                   )}
                 </div>
@@ -666,6 +689,7 @@ export default function App() {
                     onOpen={() => setLightbox(grp[2])}
                     setCursor={setCursorType}
                     photoIdx={gi * 3 + 2}
+                    paused={!!selectedCategory}
                   />
                 )}
               </div>
@@ -744,7 +768,8 @@ export default function App() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-40px' }}
                 transition={{ duration: 0.7, delay: i * 0.08, ease }}
-                onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+                onMouseEnter={() => { preloadCategory(cat.name); setCursorType('hover') }}
+                onMouseLeave={cv('default')}
                 onClick={() => setSelectedCategory(cat.name)}
               >
                 <div className="cat-img">
