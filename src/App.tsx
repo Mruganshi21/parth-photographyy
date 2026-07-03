@@ -196,19 +196,9 @@ const navLinks = [
 type Photo = typeof photos[0]
 type CursorType = 'default' | 'hover' | 'view'
 
-const preloaded = new Set<string>()
-function preloadCategory(name: string) {
-  const imgs = categoryPhotos[name] ?? []
-  imgs.forEach(p => {
-    if (preloaded.has(p.src)) return
-    preloaded.add(p.src)
-    const img = new Image()
-    img.src = p.src
-  })
-}
 
 function PhotoCard({
-  photo, outerClass, delay = 0, titleLarge = false, onOpen, setCursor, photoIdx = 0, paused = false,
+  photo, outerClass, delay = 0, titleLarge = false, onOpen, setCursor, photoIdx = 0,
 }: {
   photo: Photo
   outerClass: string
@@ -217,31 +207,50 @@ function PhotoCard({
   onOpen: () => void
   setCursor: (t: CursorType) => void
   photoIdx?: number
-  paused?: boolean
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const tiltRef      = useRef<HTMLDivElement>(null)
+  const spotRef      = useRef<HTMLDivElement>(null)
+  const overlayRef   = useRef<HTMLDivElement>(null)
+  const titleRef     = useRef<HTMLSpanElement>(null)
   const isInView     = useInView(containerRef, { once: true, amount: 0.1 })
-  const [revealed, setRevealed] = useState(false)
-  const [tiltX, setTiltX] = useState(0)
-  const [tiltY, setTiltY] = useState(0)
-  const [spot, setSpot]   = useState({ x: 50, y: 50, on: false })
+  const [isHovered, setIsHovered] = useState(false)
 
-  // even-index cards zoom in (0.86→1), odd-index cards zoom out (1.14→1)
   const zoomIn = photoIdx % 2 === 0
 
   function onMove(e: React.MouseEvent) {
     const el = tiltRef.current
     if (!el) return
-    const r = el.getBoundingClientRect()
-    setTiltX(((e.clientY - r.top - r.height / 2) / (r.height / 2)) * -6)
-    setTiltY(((e.clientX - r.left - r.width / 2) / (r.width / 2)) * 6)
-    setSpot({ x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100, on: true })
+    const r  = el.getBoundingClientRect()
+    const tx = ((e.clientY - r.top  - r.height / 2) / (r.height / 2)) * -6
+    const ty = ((e.clientX - r.left - r.width  / 2) / (r.width  / 2)) *  6
+    const sx = ((e.clientX - r.left) / r.width)  * 100
+    const sy = ((e.clientY - r.top)  / r.height) * 100
+    el.style.transform  = `perspective(900px) rotateX(${tx}deg) rotateY(${ty}deg) scale(1.02)`
+    el.style.transition = 'transform 0.1s linear'
+    if (spotRef.current) {
+      spotRef.current.style.background = `radial-gradient(circle 240px at ${sx}% ${sy}%, rgba(255,255,255,0.18) 0%, transparent 70%)`
+      spotRef.current.style.opacity    = '1'
+    }
+  }
+
+  function onEnter() {
+    if (overlayRef.current) overlayRef.current.style.opacity = '1'
+    if (titleRef.current)   titleRef.current.style.transform = 'translateY(0)'
+    setIsHovered(true)
+    setCursor('view')
   }
 
   function onLeave() {
-    setTiltX(0); setTiltY(0)
-    setSpot(s => ({ ...s, on: false }))
+    const el = tiltRef.current
+    if (el) {
+      el.style.transform  = 'perspective(900px) rotateX(0deg) rotateY(0deg) scale(1)'
+      el.style.transition = 'transform 0.65s cubic-bezier(0.25,0.46,0.45,0.94)'
+    }
+    if (spotRef.current)    spotRef.current.style.opacity    = '0'
+    if (overlayRef.current) overlayRef.current.style.opacity = '0'
+    if (titleRef.current)   titleRef.current.style.transform = 'translateY(6px)'
+    setIsHovered(false)
     setCursor('default')
   }
 
@@ -254,17 +263,12 @@ function PhotoCard({
           : { opacity: 0, y: 48, scale: zoomIn ? 0.86 : 1.14, clipPath: 'inset(0 0 100% 0)' }
         }
         transition={{ duration: 1.15, delay, ease }}
-        onAnimationComplete={() => isInView && setRevealed(true)}
       >
         <div
           ref={tiltRef}
           className="g-tilt"
-          style={{
-            transform: `perspective(900px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale(${spot.on ? 1.02 : 1})`,
-            transition: spot.on ? 'transform 0.1s linear' : 'transform 0.65s cubic-bezier(0.25,0.46,0.45,0.94)',
-          }}
           onMouseMove={onMove}
-          onMouseEnter={() => setCursor('view')}
+          onMouseEnter={onEnter}
           onMouseLeave={onLeave}
           onClick={onOpen}
         >
@@ -273,30 +277,24 @@ function PhotoCard({
               src={photo.src}
               alt={photo.title}
               loading="lazy"
-              animate={
-                spot.on             ? { scale: 1.09 } :
-                revealed && !paused ? { scale: [1.0, 1.08, 1.0] } :
-                                      { scale: 1.0 }
-              }
-              transition={
-                spot.on             ? { duration: 0.9,  ease: [0.25, 0.46, 0.45, 0.94] } :
-                revealed && !paused ? { duration: 8, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut' } :
-                                      { duration: 0 }
-              }
+              animate={{ scale: isHovered ? 1.09 : 1.0 }}
+              transition={{ duration: 0.9, ease: [0.25, 0.46, 0.45, 0.94] }}
             />
             <div
+              ref={spotRef}
               className="g-spotlight"
-              style={{
-                background: `radial-gradient(circle 240px at ${spot.x}% ${spot.y}%, rgba(255,255,255,0.18) 0%, transparent 70%)`,
-                opacity: spot.on ? 1 : 0,
-                transition: 'opacity 0.3s ease',
-              }}
+              style={{ opacity: 0, transition: 'opacity 0.3s ease' }}
             />
-            <div className="g-overlay" style={{ opacity: spot.on ? 1 : 0, transition: 'opacity 0.4s ease' }}>
+            <div
+              ref={overlayRef}
+              className="g-overlay"
+              style={{ opacity: 0 }}
+            >
               <span className="g-cat">{photo.category}</span>
               <span
+                ref={titleRef}
                 className={`g-title${titleLarge ? ' g-title-lg' : ''}`}
-                style={{ transform: spot.on ? 'translateY(0)' : 'translateY(6px)', transition: 'transform 0.4s ease' }}
+                style={{ transform: 'translateY(6px)', transition: 'transform 0.4s ease' }}
               >{photo.title}</span>
             </div>
           </div>
@@ -304,6 +302,10 @@ function PhotoCard({
       </motion.div>
     </div>
   )
+}
+
+function LazyImage({ src, alt }: { src: string; alt: string }) {
+  return <img src={src} alt={alt} loading="lazy" decoding="async" />
 }
 
 function CategoryOverlay({
@@ -316,12 +318,26 @@ function CategoryOverlay({
   onPhotoClick: (p: Photo) => void
   setCursor: (t: CursorType) => void
 }) {
+  const [visibleCount, setVisibleCount] = useState(16)
+  const sentinelRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     if (lightboxOpen) return
     const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', fn)
     return () => window.removeEventListener('keydown', fn)
   }, [onClose, lightboxOpen])
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel) return
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setVisibleCount(c => Math.min(c + 16, photos.length)) },
+      { rootMargin: '400px' }
+    )
+    obs.observe(sentinel)
+    return () => obs.disconnect()
+  }, [photos.length, visibleCount])
 
   return (
     <motion.div
@@ -350,7 +366,7 @@ function CategoryOverlay({
       </div>
 
       <div className="catov-grid">
-        {photos.map((photo, i) => (
+        {photos.slice(0, visibleCount).map((photo, i) => (
           <div
             key={photo.id}
             className="catov-item"
@@ -358,12 +374,13 @@ function CategoryOverlay({
             onMouseEnter={() => setCursor('view')}
             onMouseLeave={() => setCursor('default')}
           >
-            <img src={photo.src} alt={photo.title} />
+            <LazyImage src={photo.src} alt={photo.title} />
             <div className="catov-item-overlay">
               <span className="catov-item-num">{String(i + 1).padStart(2, '0')}</span>
             </div>
           </div>
         ))}
+        {visibleCount < photos.length && <div ref={sentinelRef} style={{ height: 1 }} />}
       </div>
     </motion.div>
   )
@@ -382,12 +399,12 @@ export default function App() {
   const mousePos    = useRef({ x: 0, y: 0 })
   const cursorPos   = useRef({ x: 0, y: 0 })
   const cursorAngle = useRef(45)
+  const cursorLabelRef = useRef<HTMLSpanElement>(null)
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     mousePos.current = { x: e.clientX, y: e.clientY }
     if (dotRef.current) {
-      dotRef.current.style.left = `${e.clientX}px`
-      dotRef.current.style.top  = `${e.clientY}px`
+      dotRef.current.style.setProperty('translate', `${e.clientX}px ${e.clientY}px`)
     }
   }, [])
 
@@ -397,8 +414,8 @@ export default function App() {
       const dy = mousePos.current.y - cursorPos.current.y
       const speed = Math.sqrt(dx * dx + dy * dy)
 
-      cursorPos.current.x += dx * 0.13
-      cursorPos.current.y += dy * 0.13
+      cursorPos.current.x += dx * 0.22
+      cursorPos.current.y += dy * 0.22
 
       // Rotate the diamond toward the direction of travel; spring back to 45° at rest
       const targetAngle = speed > 2 ? Math.atan2(dy, dx) * (180 / Math.PI) + 45 : 45
@@ -408,9 +425,8 @@ export default function App() {
       cursorAngle.current += diff * 0.12
 
       if (cursorRef.current) {
-        cursorRef.current.style.left = `${cursorPos.current.x}px`
-        cursorRef.current.style.top  = `${cursorPos.current.y}px`
-        cursorRef.current.style.setProperty('--cursor-r', `${cursorAngle.current}deg`)
+        cursorRef.current.style.setProperty('translate', `${cursorPos.current.x}px ${cursorPos.current.y}px`)
+        cursorRef.current.style.setProperty('rotate', `${cursorAngle.current}deg`)
       }
       requestAnimationFrame(animate)
     }
@@ -446,15 +462,6 @@ export default function App() {
     const el = cursorRef.current
     if (!el) return
     el.className = `cursor cursor-${t}`
-    const existing = el.querySelector<HTMLSpanElement>('.cursor-label')
-    if (t === 'view' && !existing) {
-      const span = document.createElement('span')
-      span.className = 'cursor-label'
-      span.textContent = 'VIEW'
-      el.appendChild(span)
-    } else if (t !== 'view' && existing) {
-      existing.remove()
-    }
   }, [])
 
   // Group photos: every 3 → [left, right, center-large]
@@ -466,7 +473,9 @@ export default function App() {
   return (
     <>
       {/* ── CURSOR ── */}
-      <div ref={cursorRef} className="cursor cursor-default" />
+      <div ref={cursorRef} className="cursor cursor-default">
+        <span ref={cursorLabelRef} className="cursor-label" aria-hidden="true">VIEW</span>
+      </div>
       <div ref={dotRef} className="cursor-dot" />
 
       {/* ── LOADER ── */}
@@ -665,7 +674,6 @@ export default function App() {
                       onOpen={() => setLightbox(grp[0])}
                       setCursor={setCursorType}
                       photoIdx={gi * 3}
-                      paused={!!selectedCategory}
                     />
                   )}
                   {grp[1] && (
@@ -676,7 +684,6 @@ export default function App() {
                       onOpen={() => setLightbox(grp[1])}
                       setCursor={setCursorType}
                       photoIdx={gi * 3 + 1}
-                      paused={!!selectedCategory}
                     />
                   )}
                 </div>
@@ -689,7 +696,6 @@ export default function App() {
                     onOpen={() => setLightbox(grp[2])}
                     setCursor={setCursorType}
                     photoIdx={gi * 3 + 2}
-                    paused={!!selectedCategory}
                   />
                 )}
               </div>
@@ -768,7 +774,7 @@ export default function App() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-40px' }}
                 transition={{ duration: 0.7, delay: i * 0.08, ease }}
-                onMouseEnter={() => { preloadCategory(cat.name); setCursorType('hover') }}
+                onMouseEnter={() => setCursorType('hover')}
                 onMouseLeave={cv('default')}
                 onClick={() => setSelectedCategory(cat.name)}
               >
