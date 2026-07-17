@@ -65,9 +65,9 @@ img { display: block; }
   border-color: rgba(255,255,255,0.8);
 }
 .cursor-view {
-  width: 74px;
-  height: 74px;
-  border-radius: 50%;
+  width: 92px;
+  height: 56px;
+  border-radius: 18px;
   background: #fff;
   border-color: #fff;
   animation: cursor-view-pop 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards;
@@ -80,7 +80,7 @@ img { display: block; }
   content: '';
   position: absolute;
   inset: -11px;
-  border-radius: 50%;
+  border-radius: 28px;
   border: 1px solid rgba(255,255,255,0.3);
   border-top-color: rgba(255,255,255,0.8);
   animation: cursor-spin 2.2s linear infinite;
@@ -759,13 +759,14 @@ img { display: block; }
 .catov-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 3px;
-  padding: 3px;
+  gap: 1.75rem;
+  padding: 1.75rem;
   contain: layout style;
 }
 .catov-item {
   position: relative;
   overflow: hidden;
+  border-radius: 6px;
   aspect-ratio: 1 / 1;
   cursor: none;
   content-visibility: auto;
@@ -949,12 +950,12 @@ img { display: block; }
   .footer-bottom { flex-direction: column; gap: 0.5rem; align-items: center; }
   .menu-overlay { padding: 2rem 2.5rem; }
   .menu-footer { left: 2.5rem; right: 2.5rem; }
-  .catov-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+  .catov-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.1rem; padding: 1.1rem; }
 }
 
 @media (max-width: 600px) {
   .cats-grid { grid-template-columns: 1fr; }
-  .catov-grid { grid-template-columns: repeat(2, 1fr); }
+  .catov-grid { grid-template-columns: repeat(2, 1fr); gap: 0.7rem; padding: 0.7rem; }
   .catov-header { padding: 1rem 1.2rem; }
   .hero-word {
     font-size: clamp(4rem, 22vw, 8rem);
