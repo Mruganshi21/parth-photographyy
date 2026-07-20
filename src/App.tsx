@@ -15,6 +15,11 @@ const spring = { type: 'spring' as const, stiffness: 400, damping: 60, mass: 1 }
 const catThumb = (cat: string, file: string) => `/categories-thumb/${cat}/${file}`
 const catFull  = (cat: string, file: string) => `/categories-full/${cat}/${file}`
 
+// Web3Forms delivers contact-form submissions straight to Parth's inbox — the
+// destination email is tied server-side to this key, not sent from the client.
+// Get one free at https://web3forms.com (enter Parth's email, they reply with the key).
+const WEB3FORMS_ACCESS_KEY = 'PASTE_WEB3FORMS_ACCESS_KEY_HERE'
+
 // Loader carousel — the `.loader-frame` box is portrait (280x380, ratio ~0.74), so
 // these are deliberately picked from the portrait-oriented shots in each category
 // (near that same ratio) rather than the landscape ones used in the Gallery section.
@@ -231,6 +236,7 @@ const navLinks = [
   { label: 'Gallery',    href: '#gallery'    },
   { label: 'Categories', href: '#categories' },
   { label: 'About',      href: '#about'      },
+  { label: 'Contact',    href: '#contact'    },
 ]
 
 type Photo = typeof photos[0] & { full?: string }
@@ -444,6 +450,8 @@ export default function App() {
   const [menuOpen, setMenuOpen]       = useState(false)
   const [lightbox, setLightbox]       = useState<Photo | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', message: '' })
+  const [contactStatus, setContactStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
 
   const cursorRef   = useRef<HTMLDivElement>(null)
   const dotRef      = useRef<HTMLDivElement>(null)
@@ -527,6 +535,32 @@ export default function App() {
   for (let i = 0; i < photos.length; i += 3) groups.push(photos.slice(i, i + 3))
 
   const cv = (t: CursorType) => () => setCursorType(t)
+
+  async function handleContactSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setContactStatus('sending')
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_ACCESS_KEY,
+          subject: `New shoot inquiry — ${contactForm.subject || 'General'}`,
+          from_name: contactForm.name,
+          name: contactForm.name,
+          email: contactForm.email,
+          shoot_type: contactForm.subject,
+          message: contactForm.message,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.success) throw new Error(data.message || 'Submission failed')
+      setContactStatus('sent')
+      setContactForm({ name: '', email: '', subject: '', message: '' })
+    } catch {
+      setContactStatus('error')
+    }
+  }
 
   return (
     <>
@@ -891,9 +925,9 @@ export default function App() {
 
             <div className="about-text">
               {[
-                'A photographer with a passion for capturing fleeting moments — the quiet light before dawn, the raw energy of city streets, and the intimate stories hidden in everyday life.',
-                'Every frame is a conversation between light, shadow, and emotion. I believe in letting scenes breathe, finding the extraordinary in the ordinary.',
-                'Based in India, available worldwide for portraits, landscapes, events, and editorial work.',
+                "Welcome to Parth Shoots. I am Parth Chauhan — part photographer, part food critic, part wedding crasher (invited, I promise), part crowd-watcher, and full-time chaser of good light.",
+                "Three years, two countries (India and the UK), and one very full memory card later, I've made a habit out of pointing a camera at things that matter: your restaurant's best dish, your wedding's messiest, happiest moments, the electric chaos of a live event, and the one portrait that actually looks like you on a good day.",
+                "Started as a passion. Still is. Let's make something worth looking at twice.",
               ].map((para, i) => (
                 <motion.p key={i}
                   initial={{ opacity: 0, y: 28 }}
@@ -917,6 +951,126 @@ export default function App() {
                 ))}
               </div>
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── CONTACT ── */}
+      {!loading && (
+        <section className="contact-section" id="contact">
+          <div className="sec-head sec-head-dark">
+            <motion.div className="sec-label sec-label-dark"
+              initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }} transition={{ duration: 0.6, ease }}
+            >
+              <span className="sec-num sec-num-dark">04</span><span>Get In Touch</span>
+            </motion.div>
+            <div className="sec-title-wrap">
+              <motion.h2 className="sec-title sec-title-dark"
+                initial={{ y: 110 }} whileInView={{ y: 0 }}
+                viewport={{ once: true }} transition={{ ...spring, delay: 0.1 }}
+              >Let's Talk</motion.h2>
+            </div>
+          </div>
+
+          <div className="contact-body">
+            <motion.div className="contact-info"
+              initial={{ opacity: 0, x: -40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, ease }}
+            >
+              <div className="contact-lede">
+                <p>Have a wedding to cover, a menu to shoot, or a moment you don't want to lose? Tell me about it — I usually reply within a day.</p>
+              </div>
+
+              <div className="contact-details">
+                <div className="c-detail">
+                  <span className="c-detail-l">Email</span>
+                  <a className="c-detail-v" href="mailto:hello@parthshoots.com"
+                    onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+                  >hello@parthshoots.com</a>
+                </div>
+                <div className="c-detail">
+                  <span className="c-detail-l">Phone</span>
+                  <a className="c-detail-v" href="tel:+919876543210"
+                    onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+                  >+91 98765 43210</a>
+                </div>
+                <div className="c-detail">
+                  <span className="c-detail-l">Based In</span>
+                  <span className="c-detail-v c-detail-static">India &amp; the UK</span>
+                </div>
+              </div>
+
+              <div className="contact-social">
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
+                  onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+                >Instagram</a>
+                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer"
+                  onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+                >X (Twitter)</a>
+              </div>
+            </motion.div>
+
+            <motion.form className="contact-form" onSubmit={handleContactSubmit}
+              initial={{ opacity: 0, x: 40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, ease }}
+            >
+              <div className="cf-row">
+                <div className="cf-field">
+                  <label htmlFor="cf-name">Name</label>
+                  <input id="cf-name" type="text" placeholder="Your name" required
+                    value={contactForm.name}
+                    onChange={e => setContactForm(f => ({ ...f, name: e.target.value }))}
+                    onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+                  />
+                </div>
+                <div className="cf-field">
+                  <label htmlFor="cf-email">Email</label>
+                  <input id="cf-email" type="email" placeholder="you@email.com" required
+                    value={contactForm.email}
+                    onChange={e => setContactForm(f => ({ ...f, email: e.target.value }))}
+                    onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+                  />
+                </div>
+              </div>
+
+              <div className="cf-field">
+                <label htmlFor="cf-subject">What kind of shoot?</label>
+                <input id="cf-subject" type="text" placeholder="Wedding, portrait, event, product..."
+                  value={contactForm.subject}
+                  onChange={e => setContactForm(f => ({ ...f, subject: e.target.value }))}
+                  onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+                />
+              </div>
+
+              <div className="cf-field">
+                <label htmlFor="cf-message">Message</label>
+                <textarea id="cf-message" rows={4} placeholder="Tell me about the date, place, and vibe you're going for." required
+                  value={contactForm.message}
+                  onChange={e => setContactForm(f => ({ ...f, message: e.target.value }))}
+                  onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+                />
+              </div>
+
+              <button type="submit" className="cf-submit" disabled={contactStatus === 'sending'}
+                onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
+              >
+                <span>{contactStatus === 'sending' ? 'Sending…' : 'Send Message'}</span><span>→</span>
+              </button>
+              {contactStatus === 'sent' && (
+                <p className="cf-note cf-note-ok">Message sent — I'll get back to you within a day.</p>
+              )}
+              {contactStatus === 'error' && (
+                <p className="cf-note cf-note-err">Something went wrong. Please email me directly instead.</p>
+              )}
+              {contactStatus === 'idle' && (
+                <p className="cf-note">Sends straight to my inbox.</p>
+              )}
+            </motion.form>
           </div>
         </section>
       )}
