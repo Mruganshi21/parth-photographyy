@@ -452,6 +452,10 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', message: '' })
   const [contactStatus, setContactStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  // How far the loader's PARTH/SHOOTS words slide apart. On phones the layout stacks
+  // vertically and the full ±170 offset pushes each word past the screen edge, so scale
+  // it down for narrow viewports.
+  const [wordShift, setWordShift] = useState(170)
 
   const cursorRef   = useRef<HTMLDivElement>(null)
   const dotRef      = useRef<HTMLDivElement>(null)
@@ -497,6 +501,13 @@ export default function App() {
     const frame = requestAnimationFrame(animate)
     return () => { window.removeEventListener('mousemove', handleMouseMove); cancelAnimationFrame(frame) }
   }, [handleMouseMove])
+
+  useEffect(() => {
+    const update = () => setWordShift(window.innerWidth <= 600 ? 90 : 170)
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
 
   // Loader phases
   useEffect(() => {
@@ -578,7 +589,7 @@ export default function App() {
               <motion.div
                 className="loader-word loader-word-l"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1, x: loaderPhase >= 1 ? -170 : 0 }}
+                animate={{ opacity: 1, x: loaderPhase >= 1 ? -wordShift : 0 }}
                 transition={{ opacity: { duration: 0.5 }, x: spring }}
               >
                 <span className="loader-text">PARTH</span>
@@ -596,7 +607,7 @@ export default function App() {
               <motion.div
                 className="loader-word loader-word-r"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1, x: loaderPhase >= 1 ? 170 : 0 }}
+                animate={{ opacity: 1, x: loaderPhase >= 1 ? wordShift : 0 }}
                 transition={{ opacity: { duration: 0.5, delay: 0.1 }, x: spring }}
               >
                 <span className="loader-text">SHOOTS</span>
@@ -712,7 +723,7 @@ export default function App() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             transition={{ delay: 1.1, duration: 0.9 }}
           >
-            <span className="hero-meta">India · 2024</span>
+            <span className="hero-meta">UK · 2023</span>
             <div className="hero-scroll">
               <div className="hero-scroll-bar" />
               <span>Scroll</span>
@@ -987,19 +998,19 @@ export default function App() {
               <div className="contact-details">
                 <div className="c-detail">
                   <span className="c-detail-l">Email</span>
-                  <a className="c-detail-v" href="mailto:hello@parthshoots.com"
+                  <a className="c-detail-v" href="mailto:parthchauhan33337@gmail.com"
                     onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
-                  >hello@parthshoots.com</a>
+                  >parthchauhan33337@gmail.com</a>
                 </div>
                 <div className="c-detail">
                   <span className="c-detail-l">Phone</span>
-                  <a className="c-detail-v" href="tel:+919876543210"
+                  <a className="c-detail-v" href="tel:+917774597725"
                     onMouseEnter={cv('hover')} onMouseLeave={cv('default')}
-                  >+91 98765 43210</a>
+                  >07774597725</a>
                 </div>
                 <div className="c-detail">
                   <span className="c-detail-l">Based In</span>
-                  <span className="c-detail-v c-detail-static">India &amp; the UK</span>
+                  <span className="c-detail-v c-detail-static"> The UK</span>
                 </div>
               </div>
 

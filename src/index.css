@@ -1031,6 +1031,17 @@ a.c-detail-v:hover { color: rgba(255,255,255,0.6); }
 }
 
 /* ─── RESPONSIVE ─── */
+
+/* Touch / no-hover devices: the custom JS cursor + `cursor: none` only make sense
+   with a real pointer. Restore the native cursor, hide the custom one, and neutralise
+   the hover-only transforms so nothing gets stuck in a hovered state after a tap. */
+@media (hover: none), (pointer: coarse) {
+  body, a, button, input, textarea, select { cursor: auto; }
+  .g-item, .g-tilt, .g-center, .cat-card, .catov-item, .cf-submit { cursor: pointer; }
+  .cursor, .cursor-dot { display: none !important; }
+  .navbar { mix-blend-mode: normal; }
+}
+
 @media (max-width: 1100px) {
   .cats-grid { grid-template-columns: repeat(2, 1fr); }
   .about-body { grid-template-columns: 1fr; gap: 4rem; }
@@ -1067,16 +1078,56 @@ a.c-detail-v:hover { color: rgba(255,255,255,0.6); }
   .cats-grid { grid-template-columns: 1fr; }
   .catov-grid { grid-template-columns: repeat(2, 1fr); gap: 0.7rem; padding: 0.7rem; }
   .catov-header { padding: 1rem 1.2rem; }
+  .catov-title { font-size: 0.85rem; }
+  .catov-back span:last-child { display: none; } /* keep just the arrow, saves width */
+  .catov-back { min-width: auto; }
+
+  .hero-content { padding: 0 1.25rem 4.5rem; }
   .hero-word {
     font-size: clamp(4rem, 22vw, 8rem);
     letter-spacing: -3px;
   }
   .hero-word-indent { padding-left: 6vw; }
+  .hero-tag { font-size: 0.62rem; letter-spacing: 0.2em; gap: 0.6rem; }
+  .hero-tag-line { width: 24px; }
   .hero-meta { display: none; }
-  .hero-foot { justify-content: center; }
+  .hero-foot { justify-content: center; bottom: 1.75rem; }
+
+  .sec-head { padding: 3.5rem 1.25rem 2rem; }
   .sec-title { font-size: clamp(3.5rem, 18vw, 6rem); letter-spacing: -2px; }
+  .gallery-body { padding: 1.5rem 0 5rem; }
+  .g-left .g-inner, .g-right .g-inner { height: 260px; }
+  .g-center .g-inner { height: 340px; }
+
   .loader-inner { flex-direction: column; gap: 0; }
-  .loader-frame { width: 200px; height: 280px; }
-  .menu-nav-link { font-size: clamp(2.5rem, 12vw, 4.5rem); }
-  .about-img-tag { bottom: -1rem; right: -0.5rem; }
+  .loader-frame {
+    /* keep the frame centred once the words stack vertically */
+    left: 50%;
+    width: 200px;
+    height: 280px;
+  }
+  .menu-overlay { padding: 6rem 1.75rem 2rem; justify-content: flex-start; }
+  .menu-nav-link { font-size: clamp(2.5rem, 13vw, 4.5rem); letter-spacing: -1.5px; gap: 1rem; }
+  .menu-close { top: 1.5rem; right: 1.5rem; }
+  .menu-footer { left: 1.75rem; right: 1.75rem; bottom: 2rem; flex-direction: column; gap: 0.4rem; }
+
+  .about-body { gap: 3rem; }
+  .about-img-wrap img { height: 360px; }
+  .about-img-tag { bottom: -1rem; right: 0; padding: 1rem 1.35rem; }
+  .about-text p { font-size: 0.98rem; line-height: 1.75; }
+  .about-stats { gap: 1.75rem; }
+  .a-stat-n { font-size: 2rem; }
+
+  .contact-lede p { font-size: 0.98rem; }
+  .c-detail-v { font-size: 1.15rem; }
+  .cf-submit { width: 100%; justify-content: center; }
+
+  .footer { padding: 3rem 1.5rem 2rem; }
+  .marquee-item { padding: 0 1.4rem; gap: 1.4rem; }
+}
+
+@media (max-width: 380px) {
+  .g-left .g-inner, .g-right .g-inner { height: 220px; }
+  .g-center .g-inner { height: 300px; }
+  .about-stats { flex-wrap: wrap; gap: 1.25rem 2rem; }
 }
