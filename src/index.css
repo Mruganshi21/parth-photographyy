@@ -486,6 +486,7 @@ img { display: block; }
 .g-inner {
   position: relative;
   overflow: hidden;
+  background: #141414; /* placeholder so the box is never an invisible void while the image loads */
 }
 .g-left  .g-inner { height: 520px; }
 .g-right .g-inner { height: 440px; }

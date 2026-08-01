@@ -260,9 +260,18 @@ function PhotoCard({
   const spotRef      = useRef<HTMLDivElement>(null)
   const overlayRef   = useRef<HTMLDivElement>(null)
   const titleRef     = useRef<HTMLSpanElement>(null)
-  const isInView     = useInView(containerRef, { once: true, amount: 0.1 })
+  const inViewRaw    = useInView(containerRef, { once: true, amount: 0.1 })
+  const [forceShow, setForceShow] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [revealed, setRevealed]   = useState(false)
+  // Safety net: on some mobile browsers the IntersectionObserver behind `useInView`
+  // can fail to fire, which would leave the image stuck at opacity 0 (invisible).
+  // Force the reveal after a short delay so a photo is NEVER permanently hidden.
+  const isInView = inViewRaw || forceShow
+  useEffect(() => {
+    const t = setTimeout(() => setForceShow(true), 1200)
+    return () => clearTimeout(t)
+  }, [])
 
   const zoomIn = photoIdx % 2 === 0
 
@@ -324,8 +333,11 @@ function PhotoCard({
           <div className="g-inner">
             <motion.img
               src={photo.src}
+              srcSet={`${photo.src.replace('/categories-full/', '/categories-thumb/')} 900w, ${photo.src} 2000w`}
+              sizes="(max-width: 900px) 92vw, 50vw"
               alt={photo.title}
               loading="lazy"
+              decoding="async"
               animate={
                 isHovered            ? { scale: 1.09 } :
                 revealed && !paused  ? { scale: [1.0, 1.08, 1.0] } :
