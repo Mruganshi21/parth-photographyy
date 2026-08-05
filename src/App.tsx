@@ -515,7 +515,10 @@ export default function App() {
   }, [handleMouseMove])
 
   useEffect(() => {
-    const update = () => setWordShift(window.innerWidth <= 600 ? 90 : 170)
+    const update = () => {
+      const w = window.innerWidth
+      setWordShift(w <= 430 ? 55 : w <= 600 ? 90 : 170)
+    }
     update()
     window.addEventListener('resize', update)
     return () => window.removeEventListener('resize', update)
