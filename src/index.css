@@ -1043,21 +1043,6 @@ a.c-detail-v:hover { color: rgba(255,255,255,0.6); }
   .navbar { mix-blend-mode: normal; }
 }
 
-/* Gentle float on the loader's PARTH/SHOOTS text on phone, so the intro doesn't feel
-   stiff while the photo frame cycles between the two words. Applied to the inner text
-   span / frame-inner wrapper — not `.loader-word` or `.loader-frame` themselves, since
-   those already carry their own Framer Motion / transition-driven transforms for the
-   slide-apart and pop-in entrances, and a second animation on the same `transform`
-   property would fight (and win over) those. */
-@media (max-width: 900px) {
-  .loader-text        { animation: loader-text-bob 2.6s ease-in-out infinite; }
-  .loader-frame-inner { animation: loader-text-bob 3.4s ease-in-out infinite; }
-  @keyframes loader-text-bob {
-    0%, 100% { transform: translateY(0); }
-    50%      { transform: translateY(-8px); }
-  }
-}
-
 @media (max-width: 1100px) {
   .cats-grid { grid-template-columns: repeat(2, 1fr); }
   .about-body { grid-template-columns: 1fr; gap: 4rem; }
