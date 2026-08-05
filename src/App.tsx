@@ -1149,8 +1149,8 @@ export default function App() {
             </div>
           </div>
           <div className="footer-bottom">
-            <span>(c) 2024 Parth Shoots</span>
-            <span>Built and Designed by Parth</span>
+            <span>(c) 2022 Parth Shoots</span>
+            <span>Built and Designed by Mruganshi Patel</span>
           </div>
         </footer>
       )}
