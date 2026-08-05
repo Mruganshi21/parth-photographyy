@@ -265,11 +265,20 @@ function PhotoCard({
   const [isHovered, setIsHovered] = useState(false)
   const [revealed, setRevealed]   = useState(false)
   // Safety net: on some mobile browsers the IntersectionObserver behind `useInView`
-  // can fail to fire, which would leave the image stuck at opacity 0 (invisible).
-  // Force the reveal after a short delay so a photo is NEVER permanently hidden.
+  // can fail to fire, which would leave an already-on-screen image stuck at opacity 0
+  // (invisible). Only force the reveal if the card is actually near/within the
+  // viewport when this fires — cards still below the fold don't need it, the real
+  // observer reveals those normally on scroll. (An unconditional force-show here
+  // used to reveal every photo ~1.2s after the gallery mounted regardless of scroll
+  // position, which killed the scroll-reveal animation entirely.)
   const isInView = inViewRaw || forceShow
   useEffect(() => {
-    const t = setTimeout(() => setForceShow(true), 1200)
+    const t = setTimeout(() => {
+      const el = containerRef.current
+      if (!el) return
+      const r = el.getBoundingClientRect()
+      if (r.top < window.innerHeight && r.bottom > 0) setForceShow(true)
+    }, 1200)
     return () => clearTimeout(t)
   }, [])
 
