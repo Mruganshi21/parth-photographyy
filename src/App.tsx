@@ -32,6 +32,19 @@ const loaderSlides = [
   catThumb('Product Spotlight', '12-DSC03560.jpg'),
 ]
 
+// Mobile-only hero background — on phones the single static hero photo leaves the
+// top of the screen looking empty (all the title/tag content sits at the bottom via
+// `justify-content: flex-end`), so on narrow screens this crossfades through a few
+// landscape-oriented highlights instead, using the same fade transition as the loader
+// slides above. Desktop keeps the single static image untouched.
+const heroSlides = [
+  catFull('Wedding Stories', '58-DSC08027.jpg'),
+  catFull('Live Events', '91-DSC04746.jpg'),
+  catFull('Wedding Stories', '44-DSC08753.jpg'),
+  catFull('Live Events', '100-DSC03323.jpg'),
+  catFull('Portraits', '24-DSC02322.jpg'),
+]
+
 // Hand-picked highlights from the four shoot categories, used in the homepage Gallery
 // section. Sourced at "full" resolution (max 2000px) since the gallery's center slot
 // renders up to ~60% of the page width.
@@ -524,6 +537,23 @@ export default function App() {
     return () => window.removeEventListener('resize', update)
   }, [])
 
+  // Mobile hero photo carousel — see `heroSlides` above for why.
+  const [isMobileHero, setIsMobileHero] = useState(false)
+  const [heroIndex, setHeroIndex] = useState(0)
+
+  useEffect(() => {
+    const update = () => setIsMobileHero(window.innerWidth <= 900)
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
+
+  useEffect(() => {
+    if (!isMobileHero) return
+    const iv = setInterval(() => setHeroIndex(i => (i + 1) % heroSlides.length), 4000)
+    return () => clearInterval(iv)
+  }, [isMobileHero])
+
   // Loader phases
   useEffect(() => {
     const t1 = setTimeout(() => setLoaderPhase(1), 1500)
@@ -704,7 +734,20 @@ export default function App() {
       {!loading && (
         <section className="hero" id="home">
           <div className="hero-bg">
-            <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1800&q=80" alt="" />
+            {isMobileHero ? (
+              heroSlides.map((src, i) => (
+                <img
+                  key={src}
+                  src={src}
+                  alt=""
+                  loading={i === 0 ? 'eager' : 'lazy'}
+                  decoding="async"
+                  className={`hero-bg-slide${i === heroIndex ? ' active' : ''}`}
+                />
+              ))
+            ) : (
+              <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1800&q=80" alt="" />
+            )}
             <div className="hero-bg-veil" />
           </div>
 
