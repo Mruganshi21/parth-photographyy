@@ -321,13 +321,6 @@ img { display: block; }
   opacity: 0.5;
   will-change: transform;
 }
-.hero-bg .hero-bg-slide {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 1.3s ease;
-}
-.hero-bg .hero-bg-slide.active { opacity: 0.5; }
 .hero-bg-veil {
   position: absolute;
   inset: 0;
