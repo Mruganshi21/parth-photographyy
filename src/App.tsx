@@ -464,10 +464,15 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', message: '' })
   const [contactStatus, setContactStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
-  // How far the loader's PARTH/SHOOTS words slide apart. On phones the layout stacks
-  // vertically and the full ±170 offset pushes each word past the screen edge, so scale
-  // it down for narrow viewports.
+  // How far the loader's PARTH/SHOOTS words slide apart to reveal the photo frame.
+  // The frame is absolutely positioned at the midpoint of the (tiny, text-only) flex
+  // container, so this distance has to clear half the frame's size on whichever axis
+  // is currently splitting, or the frame pops in on top of the still-nearby word.
   const [wordShift, setWordShift] = useState(170)
+  // Below 600px `.loader-inner` switches to a vertical stack (see index.css) — PARTH
+  // above SHOOTS instead of side by side — so the split has to happen on the y-axis
+  // instead of x, clearing the frame's *height* (280/240px) rather than its width.
+  const [loaderStacked, setLoaderStacked] = useState(false)
 
   const cursorRef   = useRef<HTMLDivElement>(null)
   const dotRef      = useRef<HTMLDivElement>(null)
@@ -517,7 +522,12 @@ export default function App() {
   useEffect(() => {
     const update = () => {
       const w = window.innerWidth
-      setWordShift(w <= 430 ? 55 : w <= 600 ? 90 : 170)
+      const stacked = w <= 600
+      setLoaderStacked(stacked)
+      // Stacked frame is 240px tall at ≤430px, 280px at 431–600px (see index.css) —
+      // clear half that plus the word's own height and a small buffer. Desktop/tablet
+      // frame is 280px wide, and 170 already clears it comfortably.
+      setWordShift(stacked ? (w <= 430 ? 165 : 185) : 170)
     }
     update()
     window.addEventListener('resize', update)
@@ -604,8 +614,11 @@ export default function App() {
               <motion.div
                 className="loader-word loader-word-l"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1, x: loaderPhase >= 1 ? -wordShift : 0 }}
-                transition={{ opacity: { duration: 0.5 }, x: spring }}
+                animate={loaderStacked
+                  ? { opacity: 1, y: loaderPhase >= 1 ? -wordShift : 0 }
+                  : { opacity: 1, x: loaderPhase >= 1 ? -wordShift : 0 }
+                }
+                transition={{ opacity: { duration: 0.5 }, x: spring, y: spring }}
               >
                 <span className="loader-text">PARTH</span>
               </motion.div>
@@ -622,8 +635,11 @@ export default function App() {
               <motion.div
                 className="loader-word loader-word-r"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1, x: loaderPhase >= 1 ? wordShift : 0 }}
-                transition={{ opacity: { duration: 0.5, delay: 0.1 }, x: spring }}
+                animate={loaderStacked
+                  ? { opacity: 1, y: loaderPhase >= 1 ? wordShift : 0 }
+                  : { opacity: 1, x: loaderPhase >= 1 ? wordShift : 0 }
+                }
+                transition={{ opacity: { duration: 0.5, delay: 0.1 }, x: spring, y: spring }}
               >
                 <span className="loader-text">SHOOTS</span>
               </motion.div>

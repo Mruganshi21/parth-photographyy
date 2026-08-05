@@ -1116,6 +1116,10 @@ a.c-detail-v:hover { color: rgba(255,255,255,0.6); }
   .g-center .g-inner { height: 340px; }
 
   .loader-inner { flex-direction: column; gap: 0; }
+  /* The l/r justify-content values below only made sense for the side-by-side desktop
+     layout (aligning each word toward the frame in the middle); stacked vertically,
+     center both so PARTH/SHOOTS read as one aligned block. */
+  .loader-word-l, .loader-word-r { justify-content: center; }
   .loader-frame {
     /* keep the frame centred once the words stack vertically */
     left: 50%;
