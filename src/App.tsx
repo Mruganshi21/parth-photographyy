@@ -659,7 +659,7 @@ export default function App() {
               animate={{ y: 0, opacity: loaderPhase >= 1 ? 0 : 1 }}
               transition={{ ...spring, delay: 0.5 }}
             >
-              <span className="loader-copy">(c) 2024 Parth Shoots</span>
+              <span className="loader-copy">(c) 2022 Parth Shoots</span>
             </motion.div>
           </motion.div>
         )}
@@ -718,8 +718,8 @@ export default function App() {
             </nav>
 
             <div className="menu-footer">
-              <span>India · Available Worldwide</span>
-              <span>hello@parthshoots.com</span>
+              <span>United Kingdom · Available Worldwide</span>
+              <span>parthchauhan33337@gmail.com</span>
             </div>
           </motion.div>
         )}
