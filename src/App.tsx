@@ -1050,7 +1050,7 @@ export default function App() {
                 </div>
                 <div className="c-detail">
                   <span className="c-detail-l">Based In</span>
-                  <span className="c-detail-v c-detail-static"> The UK</span>
+                  <span className="c-detail-v c-detail-static"> The United Kingdom</span>
                 </div>
               </div>
 

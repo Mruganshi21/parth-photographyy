@@ -1052,7 +1052,8 @@ a.c-detail-v:hover { color: rgba(255,255,255,0.6); }
 
 @media (max-width: 900px) {
   .navbar { padding: 1.2rem 1.5rem; }
-  .hero-content { padding: 0 1.5rem 5rem; }
+  .hero { justify-content: center; }
+  .hero-content { padding: 0 1.5rem; }
   .hero-word { letter-spacing: -4px; }
   .hero-foot { left: 1.5rem; right: 1.5rem; }
 
@@ -1083,7 +1084,7 @@ a.c-detail-v:hover { color: rgba(255,255,255,0.6); }
   .catov-back span:last-child { display: none; } /* keep just the arrow, saves width */
   .catov-back { min-width: auto; }
 
-  .hero-content { padding: 0 1.25rem 4.5rem; }
+  .hero-content { padding: 0 1.25rem; }
   .hero-word {
     font-size: clamp(4rem, 22vw, 8rem);
     letter-spacing: -3px;
